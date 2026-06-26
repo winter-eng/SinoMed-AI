@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronRight } from 'lucide-react'
+import { X } from 'lucide-react'
 
 export function CancelScreeningButton({ hasData, onCancel }) {
   const { t } = useTranslation()

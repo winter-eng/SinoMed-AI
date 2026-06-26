@@ -53,8 +53,6 @@ export function useScreening() {
     else navigate(ROUTES.DASHBOARD)
   }, [step, navigate])
 
-  const goToStep = useCallback((s) => setStep(s), [])
-
   const bmi =
     form.height && form.weight
       ? +(parseFloat(form.weight) / Math.pow(parseFloat(form.height) / 100, 2)).toFixed(1)
@@ -85,7 +83,5 @@ export function useScreening() {
     updateSymptom,
     goNext,
     goBack,
-    goToStep,
-    navigate,
   }
 }

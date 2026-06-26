@@ -1,58 +1,68 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { MapPin, ExternalLink, Clock } from 'lucide-react'
-import { cn } from '@/shared/lib/utils'
+import { MapPin, ExternalLink, Loader2, AlertCircle, Phone } from 'lucide-react'
+import { clinicApi } from '@/shared/api/clinic.api'
 
-const CLINICS = [
-  {
-    id: 1,
-    name: 'Republican Specialized Scientific-Practical Medical Center of Endocrinology',
-    address: 'Mirzo Ulugbek, Tashkent, Uzbekistan',
-    distance: '1.2',
-    open: true,
-    hours: '08:00–17:00',
-    mapsUrl: 'https://maps.google.com/?q=Republican+Specialized+Scientific-Practical+Medical+Center+of+Endocrinology+Tashkent',
-  },
-  {
-    id: 2,
-    name: 'Tashkent City Clinical Hospital №1',
-    address: 'Yunusabad district, Tashkent',
-    distance: '2.5',
-    open: true,
-    hours: '08:00–18:00',
-    mapsUrl: 'https://maps.google.com/?q=Tashkent+City+Clinical+Hospital+1+Yunusabad',
-  },
-  {
-    id: 3,
-    name: 'Intermed Clinic',
-    address: 'Chilanzar district, Tashkent',
-    distance: '3.1',
-    open: false,
-    hours: '09:00–17:00',
-    mapsUrl: 'https://maps.google.com/?q=Intermed+Clinic+Chilanzar+Tashkent',
-  },
-  {
-    id: 4,
-    name: 'Akad Medical Centre',
-    address: 'Akademgorodok, Tashkent',
-    distance: '4.0',
-    open: true,
-    hours: '08:30–17:30',
-    mapsUrl: 'https://maps.google.com/?q=Akad+Medical+Centre+Tashkent',
-  },
-  {
-    id: 5,
-    name: 'International Hospital Tashkent',
-    address: 'Yakkasaray district, Tashkent',
-    distance: '5.3',
-    open: false,
-    hours: '09:00–18:00',
-    mapsUrl: 'https://maps.google.com/?q=International+Hospital+Tashkent',
-  },
-]
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371
+  const toRad = (d) => (d * Math.PI) / 180
+  const dLat = toRad(lat2 - lat1)
+  const dLon = toRad(lon2 - lon1)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
+  return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1)
+}
+
+function mapsUrl(clinic) {
+  if (clinic.latitude && clinic.longitude) {
+    return `https://maps.google.com/?q=${clinic.latitude},${clinic.longitude}`
+  }
+  return `https://maps.google.com/?q=${encodeURIComponent(clinic.name + ' ' + (clinic.address ?? ''))}`
+}
 
 export function NearbyClinicsPage() {
   const { t } = useTranslation()
+  const [clinics, setClinics] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [userLoc, setUserLoc] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchClinics = (lat, lon) => {
+      const apiCall = lat != null
+        ? clinicApi.nearest(lat, lon)
+        : clinicApi.list()
+
+      apiCall
+        .then((data) => { if (!cancelled) setClinics(data) })
+        .catch(() => { if (!cancelled) setError(true) })
+        .finally(() => { if (!cancelled) setLoading(false) })
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (cancelled) return
+          const { latitude, longitude } = pos.coords
+          setUserLoc({ lat: latitude, lon: longitude })
+          fetchClinics(latitude, longitude)
+        },
+        () => {
+          // User denied geolocation or error — fall back to full list
+          if (!cancelled) fetchClinics(null, null)
+        },
+        { timeout: 5000 },
+      )
+    } else {
+      fetchClinics(null, null)
+    }
+
+    return () => { cancelled = true }
+  }, [])
 
   return (
     <div className="space-y-6 max-w-lg mx-auto">
@@ -61,56 +71,87 @@ export function NearbyClinicsPage() {
         <p className="mt-1 text-sm text-muted-foreground">{t('clinics.subtitle')}</p>
       </motion.div>
 
-      <div className="space-y-3">
-        {CLINICS.map((clinic, i) => (
-          <motion.div
-            key={clinic.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.04 * i, duration: 0.3 }}
-            className="rounded-xl border border-border bg-card p-4 shadow-sm"
-          >
-            <div className="flex flex-col gap-3">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-0.5">
-                  <MapPin className="h-4 w-4 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground leading-snug">{clinic.name}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{clinic.address}</p>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span className="text-xs text-muted-foreground font-medium">
-                      {clinic.distance} {t('clinics.km')}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{clinic.hours}</span>
-                    </div>
-                    <span
-                      className={cn(
-                        'text-xs font-semibold',
-                        clinic.open ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground',
-                      )}
-                    >
-                      {clinic.open ? t('clinics.open') : t('clinics.closed')}
-                    </span>
-                  </div>
-                </div>
-              </div>
+      {loading && (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-7 w-7 animate-spin text-primary" />
+        </div>
+      )}
 
-              <a
-                href={clinic.mapsUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-accent hover:border-primary/30 active:scale-[0.98]"
+      {error && (
+        <div className="flex flex-col items-center gap-3 py-10 text-center">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+          <p className="text-sm font-medium text-foreground">{t('common.error')}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-sm text-primary hover:underline"
+          >
+            {t('common.retry')}
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && clinics?.length === 0 && (
+        <p className="py-10 text-center text-sm text-muted-foreground">{t('clinics.noneFound')}</p>
+      )}
+
+      {!loading && !error && clinics && clinics.length > 0 && (
+        <div className="space-y-3">
+          {clinics.map((clinic, i) => {
+            const distance =
+              userLoc && clinic.latitude && clinic.longitude
+                ? haversineKm(userLoc.lat, userLoc.lon, clinic.latitude, clinic.longitude)
+                : null
+
+            return (
+              <motion.div
+                key={clinic.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.04 * i, duration: 0.3 }}
+                className="rounded-xl border border-border bg-card p-4 shadow-sm"
               >
-                <ExternalLink className="h-3.5 w-3.5" />
-                {t('clinics.openMaps')}
-              </a>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-0.5">
+                      <MapPin className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground leading-snug">{clinic.name}</p>
+                      {clinic.address && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">{clinic.address}</p>
+                      )}
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                        {distance && (
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {distance} {t('clinics.km')}
+                          </span>
+                        )}
+                        {clinic.phone && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            {clinic.phone}
+                          </span>
+                        )}
+                        {/* TODO: hours / open-closed status not available in ClinicResponse */}
+                      </div>
+                    </div>
+                  </div>
+
+                  <a
+                    href={mapsUrl(clinic)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-accent hover:border-primary/30 active:scale-[0.98]"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {t('clinics.openMaps')}
+                  </a>
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

@@ -8,7 +8,9 @@
       "Bash(timeout 8 npx vite --port 5173)",
       "Bash(npm run *)",
       "Bash(cat)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "WebFetch(domain:aidiagnostikapi.sangilov.uz)",
+      "Bash(npx eslint *)"
     ]
   }
 }

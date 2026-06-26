@@ -74,7 +74,7 @@ export function ScreeningPage() {
                 onBack={goBack}
               />
             )}
-            {step === 5 && <Step5Processing key="step5" />}
+            {step === 5 && <Step5Processing key="step5" imageFile={form.imageFile} />}
           </AnimatePresence>
 
           {!isProcessing && (

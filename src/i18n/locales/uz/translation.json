@@ -112,7 +112,7 @@
   "auth": {
     "title": "Xush kelibsiz",
     "subtitle": "Hisobingizga kiring",
-    "email": "Email yoki telefon raqam",
+    "email": "Email",
     "password": "Parol",
     "remember": "Meni eslab qolish",
     "forgot": "Parolni unutdingizmi?",
@@ -121,7 +121,15 @@
     "google": "Google orqali kirish",
     "noAccount": "Hisobingiz yo'qmi?",
     "register": "Ro'yxatdan o'tish",
-    "devLink": "→ Dashboardga o'tish (dev)"
+    "fullName": "To'liq ism",
+    "fullNamePlaceholder": "Ahmad Karimov",
+    "registerTitle": "Ro'yxatdan o'tish",
+    "registerSubtitle": "Yangi hisob yarating",
+    "registerSubmit": "Ro'yxatdan o'tish",
+    "haveAccount": "Hisobingiz bormi?",
+    "backToLogin": "Kirish",
+    "loginError": "Noto'g'ri email yoki parol",
+    "registerError": "Ro'yxatdan o'tishda xato yuz berdi"
   },
   "dashboard": {
     "greeting": "Salom",
@@ -169,14 +177,6 @@
     "faq4q": "Natijalar qanchalik aniq?",
     "faq4a": "Model klinik sinovlarda 87–91% aniqlikni ko'rsatdi. Biroq bu tibbiy ko'rikni almashtirmaydi."
   },
-  "clinics": {
-    "title": "Yaqin klinikalar",
-    "subtitle": "Siz yaqinidagi tibbiy muassasalar",
-    "openMaps": "Xaritada ochish",
-    "km": "km",
-    "open": "Ochiq",
-    "closed": "Yopiq"
-  },
   "settings": {
     "title": "Sozlamalar",
     "appearance": "Ko'rinish",
@@ -212,6 +212,15 @@
     "lastScreening": "Oxirgi skrining",
     "healthProfile": "Tibbiy karta",
     "viewHealthProfile": "Shaxsiy tibbiy ma'lumotlar"
+  },
+  "clinics": {
+    "title": "Yaqin klinikalar",
+    "subtitle": "Siz yaqinidagi tibbiy muassasalar",
+    "openMaps": "Xaritada ochish",
+    "km": "km",
+    "open": "Ochiq",
+    "closed": "Yopiq",
+    "noneFound": "Klinikalar topilmadi"
   },
   "screening": {
     "stepOf": "{{current}} / {{total}}",
@@ -355,7 +364,10 @@
       "stage3": "Biomarkerlarni aniqlash",
       "stage4": "Anketa ma'lumotlarini tahlil qilish",
       "stage5": "Diabetes Risk Index hisoblash",
-      "stage6": "Tavsiyalar shakllantirish"
+      "stage6": "Tavsiyalar shakllantirish",
+      "errorTitle": "Tahlil muvaffaqiyatsiz tugadi",
+      "errorNoImage": "Tahlil uchun tasvir yuklanmagan",
+      "errorFailed": "Tahlil jarayonida xato yuz berdi. Qayta urinib ko'ring."
     },
     "steps": {
       "welcome": "Boshlash",
@@ -381,6 +393,7 @@
     "recommendations": "Tavsiyalar",
     "noFindings": "Topilmalar yo'q",
     "noRecommendations": "Tavsiyalar yo'q",
+    "notFound": "Natija topilmadi",
     "riskLevels": {
       "0": "Xavf yo'q",
       "1": "Yengil xavf",
@@ -390,7 +403,22 @@
     },
     "disclaimer": "Bu natijalar tibbiy tashxis emas. Shifokoringizga murojaat qiling.",
     "shareResult": "Natijani ulashish",
-    "downloadPdf": "PDF yuklash"
+    "downloadPdf": "PDF yuklash",
+    "rec0a": "Yillik ko'z tekshiruvi tavsiya etiladi",
+    "rec0b": "Qon shakarini nazorat qilishni davom eting",
+    "rec0c": "Sog'lom turmush tarzini saqlang",
+    "rec1a": "12 oyda bir marta ko'z tekshiruvi o'tkazing",
+    "rec1b": "Qon glyukozasini muntazam tekshiring",
+    "rec1c": "Diabetni nazorat ostida saqlang",
+    "rec2a": "3–6 oyda bir marta ko'z tekshiruvi o'tkazing",
+    "rec2b": "Ko'z shifokori (retinolog) ko'rigiga murojaat qiling",
+    "rec2c": "Qon shakarini kuchli nazorat ostiga oling",
+    "rec3a": "Tezda ko'z shifokori (retinolog) huzuriga boring",
+    "rec3b": "Lazer terapiyasi zarur bo'lishi mumkin",
+    "rec3c": "Diabetni intensiv boshqarish kerak",
+    "rec4a": "Darhol ko'z shifokori yoki klinikaga boring",
+    "rec4b": "Shoshilinch tibbiy yordam zarur bo'lishi mumkin",
+    "rec4c": "Kechiktirmasdan mutaxassisga murojaat qiling"
   },
   "healthProfile": {
     "title": "Tibbiy karta",

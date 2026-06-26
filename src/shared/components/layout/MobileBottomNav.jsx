@@ -18,7 +18,7 @@ export function MobileBottomNav() {
   const location = useLocation()
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/90 backdrop-blur-xl pb-safe">
+    <nav aria-label="Main navigation" className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/90 backdrop-blur-xl pb-safe">
       <div className="flex h-16 items-center justify-around px-1">
         {navItems.map(({ key, href, icon: Icon, primary }) => {
           const isActive =
@@ -30,6 +30,7 @@ export function MobileBottomNav() {
             <Link
               key={key}
               to={href}
+              aria-label={primary ? t(`nav.${key}`) : undefined}
               className={cn(
                 'relative flex flex-col items-center gap-0.5 px-2 py-1 transition-colors',
                 primary

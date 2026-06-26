@@ -27,7 +27,7 @@ export function DesktopTopbar() {
         <Logo size="md" />
       </Link>
 
-      <nav className="flex items-center gap-1">
+      <nav aria-label="Main navigation" className="flex items-center gap-1">
         {navLinks.map(({ key, href }) => {
           const isActive = location.pathname === href
           return (
@@ -70,7 +70,7 @@ export function DesktopTopbar() {
                 <User className="h-3.5 w-3.5" />
               </div>
               <span className="text-sm font-medium text-foreground max-w-[100px] truncate">
-                {user.name}
+                {user.full_name}
               </span>
             </Link>
             <button

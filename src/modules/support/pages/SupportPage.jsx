@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Phone, MessageCircle, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { Card } from '@/shared/components/ui/Card'
@@ -53,9 +53,20 @@ function FaqItem({ question, answer }) {
           )}
         />
       </button>
-      {open && (
-        <p className="pb-3.5 text-sm text-muted-foreground leading-relaxed">{answer}</p>
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="answer"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <p className="pb-3.5 text-sm text-muted-foreground leading-relaxed">{answer}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

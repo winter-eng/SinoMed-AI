@@ -1,37 +1,105 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Loader2 } from 'lucide-react'
+import { CheckCircle2, Loader2, AlertCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { ROUTES } from '@/shared/constants/routes'
+import { predictionApi } from '@/shared/api/prediction.api'
+import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/utils'
 
 const STAGES_KEYS = ['stage1', 'stage2', 'stage3', 'stage4', 'stage5', 'stage6']
 const STAGE_DURATION = 900
 
-export function Step5Processing() {
+export function Step5Processing({ imageFile }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [currentStage, setCurrentStage] = useState(0)
   const [done, setDone] = useState(false)
+  const [error, setError] = useState(null)
 
-  useEffect(() => {
-    if (currentStage >= STAGES_KEYS.length) {
+  // Track completion of both animation and API call
+  const resultIdRef = useRef(null)
+  const apiDoneRef = useRef(false)
+  const animDoneRef = useRef(false)
+
+  const finalize = useRef(() => {
+    setTimeout(() => {
+      setDone(true)
       setTimeout(() => {
-        setDone(true)
-        setTimeout(() => {
-          navigate(ROUTES.ANALYSIS.RESULT('mock-result-1'))
-        }, 1200)
-      }, 300)
+        navigate(ROUTES.ANALYSIS.RESULT(resultIdRef.current))
+      }, 1200)
+    }, 300)
+  })
+
+  const tryFinalize = useRef(() => {
+    if (apiDoneRef.current && animDoneRef.current) {
+      finalize.current()
+    }
+  })
+
+  // Submit image to API on mount
+  useEffect(() => {
+    if (!imageFile) {
+      setError(t('screening.step5.errorNoImage'))
       return
     }
+    predictionApi
+      .submit(imageFile)
+      .then((result) => {
+        resultIdRef.current = result.id
+        apiDoneRef.current = true
+        queryClient.invalidateQueries({ queryKey: ['predictions'] })
+        tryFinalize.current()
+      })
+      .catch((err) => {
+        const detail = err?.response?.data?.detail
+        setError(
+          typeof detail === 'string'
+            ? detail
+            : t('screening.step5.errorFailed'),
+        )
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
+  // Stage animation — advances every STAGE_DURATION ms
+  useEffect(() => {
+    if (error) return
+    if (currentStage >= STAGES_KEYS.length) {
+      animDoneRef.current = true
+      tryFinalize.current()
+      return
+    }
     const timer = setTimeout(() => {
       setCurrentStage((s) => s + 1)
     }, STAGE_DURATION)
-
     return () => clearTimeout(timer)
-  }, [currentStage, navigate])
+  }, [currentStage, error])
+
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col items-center gap-6 py-10 text-center"
+      >
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+          <AlertCircle className="h-10 w-10 text-destructive" />
+        </div>
+        <div>
+          <p className="text-base font-semibold text-foreground">{t('screening.step5.errorTitle')}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+        </div>
+        <Button variant="outline" onClick={() => navigate(ROUTES.DASHBOARD)}>
+          {t('results.backDashboard')}
+        </Button>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div

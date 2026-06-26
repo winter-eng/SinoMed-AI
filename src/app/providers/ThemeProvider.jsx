@@ -17,7 +17,7 @@ export function ThemeProvider({ children }) {
     localStorage.setItem(STORAGE_KEYS.THEME, theme)
   }, [theme])
 
-  const setTheme = (t) => setThemeState(t)
+  const setTheme = setThemeState
 
   const toggleTheme = () =>
     setThemeState((t) => (t === THEMES.LIGHT ? THEMES.DARK : THEMES.LIGHT))
@@ -29,6 +29,7 @@ export function ThemeProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTheme() {
   const ctx = useContext(ThemeContext)
   if (!ctx) throw new Error('useTheme must be used within ThemeProvider')

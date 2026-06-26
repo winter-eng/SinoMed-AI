@@ -1,18 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { ChevronRight, Clock } from 'lucide-react'
+import { ChevronRight, Clock, Loader2, AlertCircle } from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
 import { EmptyState } from '@/shared/components/ui/EmptyState'
 import { Button } from '@/shared/components/ui/Button'
 import { ROUTES } from '@/shared/constants/routes'
 import { cn } from '@/shared/lib/utils'
-
-const MOCK_ANALYSES = [
-  { id: 'a1', date: '2025-06-25', riskScore: 42, riskLevel: 1, status: 'ready' },
-  { id: 'a2', date: '2025-06-20', riskScore: 67, riskLevel: 2, status: 'ready' },
-  { id: 'a3', date: '2025-06-14', riskScore: 28, riskLevel: 0, status: 'ready' },
-]
+import { usePredictions } from '@/shared/hooks/usePredictions'
 
 const riskConfig = {
   0: { label: 'riskLow', color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' },
@@ -34,6 +29,42 @@ function formatDate(dateStr, t) {
 export function RecentAnalyses() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { data: analyses, isLoading, error } = usePredictions({ limit: 5 })
+
+  if (isLoading) {
+    return (
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-foreground">{t('dashboard.recentTitle')}</h2>
+        </div>
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-foreground">{t('dashboard.recentTitle')}</h2>
+        </div>
+        <div className="flex flex-col items-center gap-2 py-6 text-center">
+          <AlertCircle className="h-5 w-5 text-destructive" />
+          <p className="text-xs text-muted-foreground">{t('common.error')}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-xs text-primary hover:underline"
+          >
+            {t('common.retry')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const list = analyses ?? []
 
   return (
     <div>
@@ -41,7 +72,7 @@ export function RecentAnalyses() {
         <h2 className="text-sm font-semibold text-foreground">{t('dashboard.recentTitle')}</h2>
       </div>
 
-      {MOCK_ANALYSES.length === 0 ? (
+      {list.length === 0 ? (
         <EmptyState
           icon={<Clock className="h-6 w-6" />}
           title={t('dashboard.recentEmpty')}
@@ -50,11 +81,13 @@ export function RecentAnalyses() {
         />
       ) : (
         <div className="space-y-2">
-          {MOCK_ANALYSES.map((analysis, i) => {
-            const risk = riskConfig[analysis.riskLevel] ?? riskConfig[0]
+          {list.map((item, i) => {
+            const riskLevel = item.diagnosis // 0–4 integer from API
+            const riskScore = Math.round((riskLevel / 4) * 100)
+            const risk = riskConfig[riskLevel] ?? riskConfig[0]
             return (
               <motion.div
-                key={analysis.id}
+                key={item.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.06, duration: 0.3 }}
@@ -63,10 +96,10 @@ export function RecentAnalyses() {
                   variant="default"
                   padding="md"
                   className="flex items-center gap-3 cursor-pointer hover:border-primary/30 transition-colors group"
-                  onClick={() => navigate(ROUTES.ANALYSIS.RESULT(analysis.id))}
+                  onClick={() => navigate(ROUTES.ANALYSIS.RESULT(item.id))}
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
-                    <span className="text-sm font-bold text-foreground">{analysis.riskScore}</span>
+                    <span className="text-sm font-bold text-foreground">{riskScore}</span>
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -76,7 +109,7 @@ export function RecentAnalyses() {
                       </span>
                     </div>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {formatDate(analysis.date, t)}
+                      {formatDate(item.created_at, t)}
                     </p>
                   </div>
 
@@ -88,14 +121,14 @@ export function RecentAnalyses() {
         </div>
       )}
 
-      {MOCK_ANALYSES.length > 0 && (
+      {list.length > 0 && (
         <Button
           variant="ghost"
           size="sm"
           className="mt-3 w-full text-muted-foreground"
-          onClick={() => navigate(ROUTES.DASHBOARD)}
+          onClick={() => navigate(ROUTES.SCREENING.NEW)}
         >
-          {t('dashboard.recentTitle')}
+          {t('dashboard.ctaButton')}
         </Button>
       )}
     </div>

@@ -41,7 +41,7 @@ export function ProfilePage() {
     navigate(ROUTES.HOME)
   }
 
-  const displayName = user?.name || t('profile.title')
+  const displayName = user?.full_name || t('profile.title')
   const displayEmail = user?.email || '—'
 
   return (
