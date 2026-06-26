@@ -1,1 +1,1 @@
-# SinoMedAI
+# SinoMed AI
