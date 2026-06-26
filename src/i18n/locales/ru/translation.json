@@ -142,7 +142,13 @@
     "viewResult": "Смотреть результат",
     "daysAgo": "дн. назад",
     "today": "Сегодня",
-    "yesterday": "Вчера"
+    "yesterday": "Вчера",
+    "healthScore": "Общее здоровье",
+    "healthScoreDesc": "Состояние здоровья",
+    "healthHeart": "Сердце",
+    "healthDiabetes": "Диабет",
+    "healthLungs": "Лёгкие",
+    "healthWeight": "Вес"
   },
   "support": {
     "title": "Поддержка",
@@ -203,7 +209,9 @@
     "logout": "Выйти",
     "doctor": "Др.",
     "screenings": "скрининга",
-    "lastScreening": "Последний скрининг"
+    "lastScreening": "Последний скрининг",
+    "healthProfile": "Медицинская карта",
+    "viewHealthProfile": "Личные медицинские данные"
   },
   "screening": {
     "stepOf": "{{current}} / {{total}}",
@@ -383,5 +391,38 @@
     "disclaimer": "Это не медицинский диагноз. Обратитесь к врачу.",
     "shareResult": "Поделиться результатом",
     "downloadPdf": "Скачать PDF"
+  },
+  "healthProfile": {
+    "title": "Медицинская карта",
+    "subtitle": "Изменения сохраняются автоматически",
+    "personal": "Личные данные",
+    "fullName": "Полное имя",
+    "fullNamePlaceholder": "Иван Иванов",
+    "age": "Возраст",
+    "agePlaceholder": "35",
+    "ageUnit": "лет",
+    "gender": "Биологический пол",
+    "male": "Мужской",
+    "female": "Женский",
+    "physical": "Физические данные",
+    "height": "Рост",
+    "heightUnit": "см",
+    "heightPlaceholder": "175",
+    "weight": "Вес",
+    "weightUnit": "кг",
+    "weightPlaceholder": "70",
+    "bmiCard": "Индекс массы тела (ИМТ)",
+    "bmiNotEnough": "Введите рост и вес",
+    "bmiNormal": "Норма",
+    "bmiUnderweight": "Дефицит массы",
+    "bmiOverweight": "Избыточный вес",
+    "bmiObese": "Ожирение",
+    "medical": "Медицинские данные",
+    "bloodType": "Группа крови",
+    "bloodTypeNone": "Не указана",
+    "allergies": "Аллергии",
+    "allergiesPlaceholder": "Пенициллин, пыльца...",
+    "chronicDiseases": "Хронические заболевания",
+    "chronicDiseasesPlaceholder": "Гипертония, астма..."
   }
 }

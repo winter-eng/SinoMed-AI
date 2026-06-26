@@ -6,7 +6,9 @@
       "Bash(npm install *)",
       "Bash(npx tsc *)",
       "Bash(timeout 8 npx vite --port 5173)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(cat)",
+      "Read(//tmp/**)"
     ]
   }
 }

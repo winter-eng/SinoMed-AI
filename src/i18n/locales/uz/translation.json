@@ -142,7 +142,13 @@
     "viewResult": "Natijani ko'rish",
     "daysAgo": "kun oldin",
     "today": "Bugun",
-    "yesterday": "Kecha"
+    "yesterday": "Kecha",
+    "healthScore": "Umumiy sog'liq",
+    "healthScoreDesc": "Sog'liq holatingiz",
+    "healthHeart": "Yurak",
+    "healthDiabetes": "Diabet",
+    "healthLungs": "O'pka",
+    "healthWeight": "Vazn"
   },
   "support": {
     "title": "Yordam",
@@ -203,7 +209,9 @@
     "logout": "Chiqish",
     "doctor": "Dr.",
     "screenings": "skrining",
-    "lastScreening": "Oxirgi skrining"
+    "lastScreening": "Oxirgi skrining",
+    "healthProfile": "Tibbiy karta",
+    "viewHealthProfile": "Shaxsiy tibbiy ma'lumotlar"
   },
   "screening": {
     "stepOf": "{{current}} / {{total}}",
@@ -383,5 +391,38 @@
     "disclaimer": "Bu natijalar tibbiy tashxis emas. Shifokoringizga murojaat qiling.",
     "shareResult": "Natijani ulashish",
     "downloadPdf": "PDF yuklash"
+  },
+  "healthProfile": {
+    "title": "Tibbiy karta",
+    "subtitle": "O'zgarishlar avtomatik saqlanadi",
+    "personal": "Shaxsiy ma'lumotlar",
+    "fullName": "To'liq ism",
+    "fullNamePlaceholder": "Ahmad Karimov",
+    "age": "Yosh",
+    "agePlaceholder": "35",
+    "ageUnit": "yosh",
+    "gender": "Biologik jins",
+    "male": "Erkak",
+    "female": "Ayol",
+    "physical": "Jismoniy ko'rsatkichlar",
+    "height": "Bo'y",
+    "heightUnit": "sm",
+    "heightPlaceholder": "175",
+    "weight": "Vazn",
+    "weightUnit": "kg",
+    "weightPlaceholder": "70",
+    "bmiCard": "Tana massasi indeksi (BMI)",
+    "bmiNotEnough": "Bo'y va vaznni kiriting",
+    "bmiNormal": "Me'yor",
+    "bmiUnderweight": "Vazn yetishmasligi",
+    "bmiOverweight": "Ortiqcha vazn",
+    "bmiObese": "Semizlik",
+    "medical": "Tibbiy ma'lumotlar",
+    "bloodType": "Qon guruhi",
+    "bloodTypeNone": "Ko'rsatilmagan",
+    "allergies": "Allergiyalar",
+    "allergiesPlaceholder": "Penitsillin, changli o'tlar...",
+    "chronicDiseases": "Surunkali kasalliklar",
+    "chronicDiseasesPlaceholder": "Gipertenziya, astma..."
   }
 }

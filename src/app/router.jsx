@@ -9,6 +9,7 @@ import { SettingsPage } from '@/modules/settings/pages/SettingsPage'
 import { SupportPage } from '@/modules/support/pages/SupportPage'
 import { NearbyClinicsPage } from '@/modules/clinics/pages/NearbyClinicsPage'
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
+import { HealthProfilePage } from '@/modules/health-profile/pages/HealthProfilePage'
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { path: '/clinics', element: <NearbyClinicsPage /> },
       { path: '/settings', element: <SettingsPage /> },
       { path: '/profile', element: <ProfilePage /> },
+      { path: '/health-profile', element: <HealthProfilePage /> },
     ],
   },
 ])

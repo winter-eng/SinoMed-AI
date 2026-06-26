@@ -14,4 +14,5 @@ export const ROUTES = {
   CLINICS: '/clinics',
   SETTINGS: '/settings',
   PROFILE: '/profile',
+  HEALTH_PROFILE: '/health-profile',
 }

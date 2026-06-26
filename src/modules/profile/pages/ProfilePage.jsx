@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { User, Edit2, LogOut, Shield, Mail } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { User, Edit2, LogOut, Shield, Mail, ChevronRight, FileHeart } from 'lucide-react'
+import { useNavigate, Link } from 'react-router-dom'
 import { Card } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { useAuth } from '@/app/providers/AuthProvider'
@@ -77,7 +77,27 @@ export function ProfilePage() {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.35 }}
+        transition={{ delay: 0.08, duration: 0.35 }}
+      >
+        <Link
+          to={ROUTES.HEALTH_PROFILE}
+          className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-accent/50 active:scale-[0.99]"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <FileHeart className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground">{t('profile.healthProfile')}</p>
+            <p className="text-xs text-muted-foreground">{t('profile.viewHealthProfile')}</p>
+          </div>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </Link>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.13, duration: 0.35 }}
       >
         <Card variant="default" padding="lg">
           <h2 className="text-sm font-semibold text-foreground mb-1">{t('profile.accountInfo')}</h2>
@@ -92,7 +112,7 @@ export function ProfilePage() {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.35 }}
+        transition={{ delay: 0.2, duration: 0.35 }}
       >
         <Button
           variant="outline"
