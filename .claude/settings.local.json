@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -f index.html orders.html orders.js script.js)",
+      "Bash(mkdir -p src/app/providers src/pages/auth src/pages/dashboard src/pages/patients src/pages/analysis src/pages/reports src/pages/settings src/features/auth/components src/features/auth/hooks src/features/patients/components src/features/patients/hooks src/features/analysis/components src/features/analysis/hooks src/shared/ui src/shared/components/layout src/shared/components/common src/shared/hooks src/shared/lib src/shared/types src/styles public)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(timeout 8 npx vite --port 5173)",
+      "Bash(npm run *)"
+    ]
+  }
+}
