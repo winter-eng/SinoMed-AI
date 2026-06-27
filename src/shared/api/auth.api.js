@@ -7,10 +7,15 @@ const LOGIN_ENDPOINTS = {
 }
 
 export const authApi = {
-  login: ({ email, password, role = 'patient' }) =>
-    apiClient
-      .post(LOGIN_ENDPOINTS[role] ?? LOGIN_ENDPOINTS.patient, { email, password })
-      .then((r) => r.data),
+  // identifier = phone string for patient, username string for doctor/nurse
+  login: ({ identifier, password, role = 'patient' }) => {
+    const endpoint = LOGIN_ENDPOINTS[role] ?? LOGIN_ENDPOINTS.patient
+    const body =
+      role === 'patient'
+        ? { phone: identifier, password }
+        : { username: identifier, password }
+    return apiClient.post(endpoint, body).then((r) => r.data)
+  },
 
   register: (data) => {
     const payload = {

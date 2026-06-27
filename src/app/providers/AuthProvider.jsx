@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { authApi } from '@/shared/api/auth.api'
 import { patientApi } from '@/shared/api/patient.api'
+import { doctorApi } from '@/shared/api/doctor.api'
+import { nurseApi } from '@/shared/api/nurse.api'
 import { STORAGE_KEYS } from '@/shared/constants/storage'
 
 const AuthContext = createContext(null)
@@ -22,9 +24,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   // Bootstrap: restore session from localStorage.
-  // Patient role validates the token against /patients/me.
-  // Non-patient roles (doctor, etc.) restore directly from cache — they have
-  // their own /me endpoints that will be wired up per-role later.
+  // Non-patient roles restore from cache — their pages refresh data on mount.
   useEffect(() => {
     const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
     const savedRole = localStorage.getItem(STORAGE_KEYS.USER_ROLE) ?? 'patient'
@@ -41,7 +41,7 @@ export function AuthProvider({ children }) {
       return
     }
 
-    // DEV: skip API validation for preview tokens so the session survives page refresh
+    // DEV: skip API validation for preview tokens so session survives page refresh
     if (import.meta.env.DEV && token.startsWith('dev-token')) {
       const savedUser = localStorage.getItem(STORAGE_KEYS.AUTH_USER)
       const user = savedUser ? JSON.parse(savedUser) : null
@@ -71,16 +71,37 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('auth:logout', handler)
   }, [])
 
-  const login = useCallback(async (email, password, role = 'patient') => {
-    const { access_token } = await authApi.login({ email, password, role })
+  // identifier = phone (patient) | username (doctor/nurse)
+  const login = useCallback(async (identifier, password, role = 'patient') => {
+    const { access_token } = await authApi.login({ identifier, password, role })
     localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, access_token)
     localStorage.setItem(STORAGE_KEYS.USER_ROLE, role)
 
-    if (role !== 'patient') {
-      setAuth({ user: null, token: access_token, isAuthenticated: true, isLoading: false, role })
+    if (role === 'doctor') {
+      let user = null
+      try {
+        user = await doctorApi.me()
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user))
+      } catch {
+        // proceed authenticated even if profile fetch fails; pages will retry
+      }
+      setAuth({ user, token: access_token, isAuthenticated: true, isLoading: false, role })
       return
     }
 
+    if (role === 'assistant') {
+      let user = null
+      try {
+        user = await nurseApi.me()
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user))
+      } catch {
+        // proceed authenticated even if profile fetch fails
+      }
+      setAuth({ user, token: access_token, isAuthenticated: true, isLoading: false, role })
+      return
+    }
+
+    // patient
     const user = await patientApi.me()
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user))
     setAuth({ user, token: access_token, isAuthenticated: true, isLoading: false, role })
@@ -95,7 +116,7 @@ export function AuthProvider({ children }) {
     setAuth({ user, token: access_token, isAuthenticated: true, isLoading: false, role: 'patient' })
   }, [])
 
-  // Development-only previews — tree-shaken in production by Vite (import.meta.env.DEV === false).
+  // Development-only previews — tree-shaken in production by Vite
   const devPreviewDoctor = useCallback(() => {
     if (!import.meta.env.DEV) return
     const devUser = { id: 'dev-doctor', full_name: 'Demo Doctor', specialization: 'Cardiologist' }
@@ -124,7 +145,9 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ ...auth, login, register, logout, devPreviewDoctor, devPreviewAssistant, devPreviewPatient }}>
+    <AuthContext.Provider
+      value={{ ...auth, login, register, logout, devPreviewDoctor, devPreviewAssistant, devPreviewPatient }}
+    >
       {children}
     </AuthContext.Provider>
   )

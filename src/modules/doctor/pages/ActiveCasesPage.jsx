@@ -1,60 +1,75 @@
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { Activity, Clock, Eye, CheckCircle } from 'lucide-react'
+import { Activity, Clock, Eye, CheckCircle, ClipboardList, X } from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
 import { cn } from '@/shared/lib/utils'
-
-const CASES = [
-  { id: 1, name: 'Aziz Karimov', age: 54, risk: 82, prediction: 'Type 2 Diabetes', status: 'waiting' },
-  { id: 2, name: 'Malika Toshmatova', age: 41, risk: 65, prediction: 'Diabetic Retinopathy', status: 'review' },
-  { id: 3, name: 'Jahon Nazarov', age: 67, risk: 91, prediction: 'Type 2 Diabetes', status: 'waiting' },
-  { id: 4, name: 'Dilnoza Umarova', age: 38, risk: 28, prediction: 'Pre-diabetes', status: 'completed' },
-  { id: 5, name: 'Rustam Qodirov', age: 59, risk: 74, prediction: 'Diabetic Neuropathy', status: 'progress' },
-  { id: 6, name: 'Nargiza Yusupova', age: 45, risk: 55, prediction: 'Type 2 Diabetes', status: 'waiting' },
-]
+import { doctorApi } from '@/shared/api/doctor.api'
 
 function initials(name) {
+  if (!name) return '?'
   return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
 }
 
-function riskVariant(risk) {
-  if (risk >= 75) return { text: 'text-destructive', bg: 'bg-destructive/10' }
-  if (risk >= 40) return { text: 'text-amber-500', bg: 'bg-amber-500/10' }
-  return { text: 'text-green-500', bg: 'bg-green-500/10' }
+function formatValue(val) {
+  if (val === null || val === undefined) return '—'
+  if (typeof val === 'boolean') return val ? 'Yes' : 'No'
+  if (typeof val === 'object') return JSON.stringify(val)
+  return String(val)
+}
+
+function formatDate(iso) {
+  if (!iso) return null
+  try {
+    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+  } catch {
+    return iso
+  }
 }
 
 export function ActiveCasesPage() {
   const { t } = useTranslation()
+  const [anketas, setAnketas] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [selected, setSelected] = useState(null)
+  const [detailLoading, setDetailLoading] = useState(false)
 
   const STATUS_CONFIG = {
-    waiting: {
-      label: t('doctor.cases.statusWaiting'),
-      color: 'text-amber-600',
-      bg: 'bg-amber-500/10',
-      icon: Clock,
-    },
-    review: {
-      label: t('doctor.cases.statusReview'),
-      color: 'text-blue-600',
-      bg: 'bg-blue-500/10',
-      icon: Eye,
-    },
-    progress: {
-      label: t('doctor.cases.statusProgress'),
-      color: 'text-indigo-600',
-      bg: 'bg-indigo-500/10',
-      icon: Activity,
-    },
-    completed: {
-      label: t('doctor.cases.statusCompleted'),
-      color: 'text-green-600',
-      bg: 'bg-green-500/10',
-      icon: CheckCircle,
-    },
+    waiting: { label: t('doctor.cases.statusWaiting'), color: 'text-amber-600', bg: 'bg-amber-500/10', icon: Clock },
+    review: { label: t('doctor.cases.statusReview'), color: 'text-blue-600', bg: 'bg-blue-500/10', icon: Eye },
+    progress: { label: t('doctor.cases.statusProgress'), color: 'text-indigo-600', bg: 'bg-indigo-500/10', icon: Activity },
+    completed: { label: t('doctor.cases.statusCompleted'), color: 'text-green-600', bg: 'bg-green-500/10', icon: CheckCircle },
+  }
+
+  useEffect(() => {
+    doctorApi
+      .anketas()
+      .then((data) => setAnketas(Array.isArray(data) ? data : []))
+      .catch(() => setError(t('common.error')))
+      .finally(() => setLoading(false))
+  }, [t])
+
+  const openDetail = async (anketa) => {
+    setSelected(anketa)
+    setDetailLoading(true)
+    try {
+      const detail = await doctorApi.anketaDetail(anketa.id)
+      setSelected(detail)
+    } catch {
+      // keep summary data
+    } finally {
+      setDetailLoading(false)
+    }
+  }
+
+  const getStatus = (item) => {
+    const key = String(item.status ?? '').toLowerCase()
+    return STATUS_CONFIG[key] ?? STATUS_CONFIG.waiting
   }
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto">
+    <div className="relative space-y-4 max-w-2xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -64,15 +79,39 @@ export function ActiveCasesPage() {
         <p className="mt-0.5 text-sm text-muted-foreground">{t('doctor.cases.subtitle')}</p>
       </motion.div>
 
+      {loading && (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-20 animate-pulse rounded-xl bg-muted" />
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
+      )}
+
+      {!loading && !error && anketas.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-2 py-16 text-center"
+        >
+          <ClipboardList className="h-8 w-8 text-muted-foreground/40" />
+          <p className="text-sm font-medium text-foreground">{t('doctor.cases.noAnketas')}</p>
+          <p className="text-xs text-muted-foreground">{t('doctor.cases.noAnketasDesc')}</p>
+        </motion.div>
+      )}
+
       <div className="space-y-3">
-        {CASES.map((c, i) => {
-          const status = STATUS_CONFIG[c.status]
+        {anketas.map((item, i) => {
+          const status = getStatus(item)
           const StatusIcon = status.icon
-          const risk = riskVariant(c.risk)
+          const name = item.patient_name ?? item.full_name ?? `Case #${item.id}`
 
           return (
             <motion.div
-              key={c.id}
+              key={item.id ?? i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 * i + 0.05, duration: 0.3 }}
@@ -81,15 +120,15 @@ export function ActiveCasesPage() {
                 variant="default"
                 padding="md"
                 className="cursor-pointer transition-colors hover:border-primary/20 active:scale-[0.99]"
+                onClick={() => openDetail(item)}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
-                    {initials(c.name)}
+                    {initials(name)}
                   </div>
-
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-foreground">{c.name}</p>
+                      <p className="text-sm font-semibold text-foreground">{name}</p>
                       <span
                         className={cn(
                           'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium',
@@ -101,24 +140,11 @@ export function ActiveCasesPage() {
                         {status.label}
                       </span>
                     </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-3">
-                      <span className="text-xs text-muted-foreground">
-                        {t('doctor.cases.ageLabel')}: {c.age}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{c.prediction}</span>
-                    </div>
-                  </div>
-
-                  <div
-                    className={cn(
-                      'flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl',
-                      risk.bg,
+                    {item.created_at && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {t('doctor.cases.createdAt')}: {formatDate(item.created_at)}
+                      </p>
                     )}
-                  >
-                    <span className={cn('text-base font-bold leading-none', risk.text)}>
-                      {c.risk}%
-                    </span>
-                    <span className="mt-0.5 text-[9px] text-muted-foreground">AI</span>
                   </div>
                 </div>
               </Card>
@@ -126,6 +152,57 @@ export function ActiveCasesPage() {
           )
         })}
       </div>
+
+      {/* Detail panel */}
+      <AnimatePresence>
+        {selected && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-40 bg-black/40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelected(null)}
+            />
+            <motion.div
+              className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl border-t border-border bg-background p-5 shadow-2xl"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 340, damping: 32 }}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-base font-semibold text-foreground">{t('doctor.cases.caseDetail')}</p>
+                <button
+                  onClick={() => setSelected(null)}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {detailLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-10 animate-pulse rounded-xl bg-muted" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {Object.entries(selected).map(([key, val]) => (
+                    <div key={key} className="flex items-start gap-3 border-b border-border/40 py-2.5 last:border-0">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</p>
+                        <p className="mt-0.5 break-all text-sm text-foreground">{formatValue(val)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -1,14 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { Copy, Share2, UserPlus, Check, Users, UserCheck, Trophy } from 'lucide-react'
 import { useAuth } from '@/app/providers/AuthProvider'
+import { nurseApi } from '@/shared/api/nurse.api'
 import { Button } from '@/shared/components/ui/Button'
 import { Card } from '@/shared/components/ui/Card'
 import { cn } from '@/shared/lib/utils'
 
-const STATS = { invited: 47, registered: 31, ranking: 7 }
-const NEXT_REWARD = { label: '5,000,000 UZS', goal: 100, current: 31 }
+const NEXT_REWARD = { label: '5,000,000 UZS', goal: 100 }
 
 // Deterministic QR-like SVG
 const FINDER = [
@@ -32,12 +32,10 @@ function buildMatrix() {
   place(0, 0)
   place(0, S - 7)
   place(S - 7, 0)
-  // Timing
   for (let i = 8; i < S - 8; i++) {
     m[6][i] = i % 2 === 0 ? 1 : 0
     m[i][6] = i % 2 === 0 ? 1 : 0
   }
-  // Data
   for (let r = 0; r < S; r++)
     for (let c = 0; c < S; c++)
       if (m[r][c] === -1)
@@ -76,11 +74,22 @@ export function ReferralPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [copied, setCopied] = useState(false)
+  const [referrals, setReferrals] = useState([])
 
-  const code = user?.referral_code || 'SINOMED-X82K91'
-  const pct = Math.min(100, Math.round((NEXT_REWARD.current / NEXT_REWARD.goal) * 100))
+  const code = user?.referral_code || '—'
+
+  useEffect(() => {
+    nurseApi
+      .referrals()
+      .then((data) => setReferrals(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
+
+  const totalRegistered = referrals.length
+  const pct = Math.min(100, Math.round((totalRegistered / NEXT_REWARD.goal) * 100))
 
   const handleCopy = () => {
+    if (code === '—') return
     navigator.clipboard.writeText(code).catch(() => {})
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -88,7 +97,7 @@ export function ReferralPage() {
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({ title: 'SinoMed AI', text: `Join SinoMed AI with my referral code: ${code}`, url: 'https://sinomed.ai' }).catch(() => {})
+      navigator.share({ title: 'SinoMed AI', text: `Join SinoMed AI with my referral code: ${code}` }).catch(() => {})
     } else {
       handleCopy()
     }
@@ -153,9 +162,9 @@ export function ReferralPage() {
         <p className="mb-3 text-sm font-semibold text-foreground">{t('assistant.referral.stats')}</p>
         <div className="grid grid-cols-3 gap-2">
           {[
-            { icon: Users, value: STATS.invited, label: t('assistant.referral.invited') },
-            { icon: UserCheck, value: STATS.registered, label: t('assistant.referral.registered') },
-            { icon: Trophy, value: `#${STATS.ranking}`, label: t('assistant.referral.ranking') },
+            { icon: Users, value: totalRegistered, label: t('assistant.referral.invited') },
+            { icon: UserCheck, value: totalRegistered, label: t('assistant.referral.registered') },
+            { icon: Trophy, value: '—', label: t('assistant.referral.ranking') },
           ].map(({ icon: Icon, value, label }) => (
             <div key={label} className="flex flex-col items-center gap-1 rounded-xl border border-border bg-card py-4">
               <Icon className="h-4 w-4 text-primary mb-0.5" />
@@ -180,7 +189,7 @@ export function ReferralPage() {
           </div>
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">{NEXT_REWARD.current} {t('assistant.referral.progressOf')} {NEXT_REWARD.goal}</span>
+              <span className="text-muted-foreground">{totalRegistered} {t('assistant.referral.progressOf')} {NEXT_REWARD.goal}</span>
               <span className="font-semibold text-primary">{pct}%</span>
             </div>
             <div className="h-2 rounded-full bg-muted overflow-hidden">
@@ -191,7 +200,7 @@ export function ReferralPage() {
                 transition={{ delay: 0.4, duration: 0.8, ease: 'easeOut' }}
               />
             </div>
-            <p className="text-[10px] text-muted-foreground">{NEXT_REWARD.goal - NEXT_REWARD.current} more referrals to unlock</p>
+            <p className="text-[10px] text-muted-foreground">{NEXT_REWARD.goal - totalRegistered} more referrals to unlock</p>
           </div>
         </Card>
       </motion.div>

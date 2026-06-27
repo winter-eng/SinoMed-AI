@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Eye, EyeOff, Mail, Lock, User, Phone, Tag } from 'lucide-react'
+import { Eye, EyeOff, Lock, User, Phone, Tag, AtSign } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/utils'
@@ -38,7 +38,9 @@ export function LoginForm({ mode = 'login' }) {
     return VALID_ROLES.includes(saved) ? saved : 'patient'
   })
   const [fullName, setFullName] = useState('')
+  // phone is used both for patient login and registration
   const [phone, setPhone] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -47,6 +49,7 @@ export function LoginForm({ mode = 'login' }) {
   const [passwordError, setPasswordError] = useState('')
 
   const isRegister = mode === 'register'
+  const isPatient = activeRole === 'patient'
 
   const roles = [
     { id: 'patient', label: t('auth.rolePatient') },
@@ -71,6 +74,7 @@ export function LoginForm({ mode = 'login' }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+
     if (isRegister) {
       let valid = true
       if (!isValidUzPhone(phone)) {
@@ -90,7 +94,9 @@ export function LoginForm({ mode = 'login' }) {
         referral_code: referralCode.trim() || undefined,
       })
     } else {
-      void submitLogin({ email, password, role: activeRole })
+      // Login: identifier is phone (patient) or username (doctor/nurse)
+      const identifier = isPatient ? '+' + phone.replace(/\D/g, '') : username.trim()
+      void submitLogin({ identifier, password, role: activeRole })
     }
   }
 
@@ -147,8 +153,8 @@ export function LoginForm({ mode = 'login' }) {
         </div>
       )}
 
-      {/* Register: Phone Number */}
-      {isRegister && (
+      {/* Phone: used for patient login AND registration */}
+      {(isRegister || (!isRegister && isPatient)) && (
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-foreground">{t('auth.phone')}</label>
           <div className="relative">
@@ -169,7 +175,26 @@ export function LoginForm({ mode = 'login' }) {
         </div>
       )}
 
-      {/* Register: Password */}
+      {/* Username: doctor / nurse login only */}
+      {!isRegister && !isPatient && (
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-foreground">{t('auth.username')}</label>
+          <div className="relative">
+            <AtSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="username"
+              autoComplete="username"
+              className={inputBase}
+              required
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Register: Password (with strength hint) */}
       {isRegister && (
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-foreground">{t('auth.password')}</label>
@@ -199,31 +224,28 @@ export function LoginForm({ mode = 'login' }) {
         </div>
       )}
 
-      {/* Email */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium text-foreground">
-          {t('auth.email')}
-          {isRegister && (
+      {/* Register: Email (optional) */}
+      {isRegister && (
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-foreground">
+            Email
             <span className="ml-1.5 text-xs font-normal text-muted-foreground">
               ({t('auth.optional')})
             </span>
-          )}
-        </label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="user@example.com"
-            className={inputBase}
-            required={!isRegister}
-          />
-        </div>
-        {isRegister && (
+          </label>
+          <div className="relative">
+            <AtSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="user@example.com"
+              className={inputBase}
+            />
+          </div>
           <p className="text-xs text-muted-foreground">{t('auth.emailHint')}</p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Login: Password */}
       {!isRegister && (

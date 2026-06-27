@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, LogOut, Phone, Mail, Award, MapPin, Clock, BadgeCheck, Stethoscope } from 'lucide-react'
+import { Edit2, LogOut, Phone, Mail, BadgeCheck, Stethoscope, AtSign, Hash, Calendar } from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { Logo } from '@/shared/components/ui/Logo'
@@ -11,6 +11,15 @@ import { ROUTES } from '@/shared/constants/routes'
 function initials(name) {
   if (!name) return 'DR'
   return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
+}
+
+function formatDate(iso) {
+  if (!iso) return null
+  try {
+    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch {
+    return iso
+  }
 }
 
 function InfoRow({ icon: Icon, label, value }) {
@@ -32,8 +41,8 @@ export function DoctorProfilePage() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
-  const displayName = user?.full_name || 'Demo Doctor'
-  const specialization = user?.specialization || 'Endocrinologist'
+  const displayName = user?.full_name || '—'
+  const specialization = user?.specialization
 
   const handleLogout = () => {
     logout()
@@ -42,7 +51,6 @@ export function DoctorProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto space-y-5">
-      {/* Brand logo */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -65,7 +73,9 @@ export function DoctorProfilePage() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-base font-semibold text-foreground">{displayName}</p>
-              <p className="truncate text-sm text-muted-foreground">{specialization}</p>
+              {specialization && (
+                <p className="truncate text-sm text-muted-foreground">{specialization}</p>
+              )}
               <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                 <BadgeCheck className="h-3 w-3" />
                 {t('doctor.role')}
@@ -91,17 +101,9 @@ export function DoctorProfilePage() {
           <h2 className="mb-1 text-sm font-semibold text-foreground">Professional</h2>
           <div className="mt-3">
             <InfoRow icon={Stethoscope} label={t('doctor.profile.specialization')} value={specialization} />
-            <InfoRow icon={MapPin} label={t('doctor.profile.hospital')} value="Tashkent City Hospital No. 3" />
-            <InfoRow
-              icon={Award}
-              label={t('doctor.profile.experience')}
-              value={`12 ${t('doctor.profile.experienceUnit')}`}
-            />
-            <InfoRow
-              icon={Clock}
-              label={t('doctor.profile.workingHours')}
-              value="Mon – Fri, 09:00 – 17:00"
-            />
+            <InfoRow icon={Hash} label={t('doctor.profile.clinicId')} value={user?.clinic_id} />
+            <InfoRow icon={AtSign} label={t('doctor.profile.username')} value={user?.username} />
+            <InfoRow icon={Calendar} label={t('doctor.profile.joinedDate')} value={formatDate(user?.created_at)} />
           </div>
         </Card>
       </motion.div>
@@ -115,9 +117,8 @@ export function DoctorProfilePage() {
         <Card variant="default" padding="lg">
           <h2 className="mb-1 text-sm font-semibold text-foreground">Contact</h2>
           <div className="mt-3">
-            <InfoRow icon={Phone} label={t('doctor.profile.phone')} value="+998 90 123 45 67" />
-            <InfoRow icon={Mail} label={t('doctor.profile.email')} value="doctor@sinomed.ai" />
-            <InfoRow icon={BadgeCheck} label={t('doctor.profile.licenseId')} value="UZ-MED-2024-00147" />
+            <InfoRow icon={Phone} label={t('doctor.profile.phone')} value={user?.phone} />
+            <InfoRow icon={Mail} label={t('doctor.profile.email')} value={user?.email} />
           </div>
         </Card>
       </motion.div>

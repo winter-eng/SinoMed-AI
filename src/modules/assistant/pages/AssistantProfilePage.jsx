@@ -1,18 +1,28 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, LogOut, Copy, Trophy, Users, Calendar, BadgeCheck, Star, Zap, Award } from 'lucide-react'
-import { useState } from 'react'
+import { Edit2, LogOut, Copy, Trophy, Users, Calendar, BadgeCheck, Star, Zap, Award, Phone, Mail, AtSign } from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { Logo } from '@/shared/components/ui/Logo'
 import { useAuth } from '@/app/providers/AuthProvider'
+import { nurseApi } from '@/shared/api/nurse.api'
 import { ROUTES } from '@/shared/constants/routes'
 import { cn } from '@/shared/lib/utils'
 
 function initials(name) {
   if (!name) return 'MA'
   return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
+}
+
+function formatDate(iso) {
+  if (!iso) return null
+  try {
+    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch {
+    return iso
+  }
 }
 
 function InfoRow({ icon: Icon, label, value, mono }) {
@@ -42,11 +52,22 @@ export function AssistantProfilePage() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [codeCopied, setCodeCopied] = useState(false)
+  const [referrals, setReferrals] = useState([])
 
-  const displayName = user?.full_name || 'Demo Assistant'
-  const referralCode = user?.referral_code || 'SINOMED-X82K91'
+  const displayName = user?.full_name || '—'
+  const referralCode = user?.referral_code || '—'
+
+  useEffect(() => {
+    nurseApi
+      .referrals()
+      .then((data) => setReferrals(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
+
+  const totalReferrals = referrals.length
 
   const handleCopy = () => {
+    if (referralCode === '—') return
     navigator.clipboard.writeText(referralCode).catch(() => {})
     setCodeCopied(true)
     setTimeout(() => setCodeCopied(false), 2000)
@@ -114,9 +135,11 @@ export function AssistantProfilePage() {
         <Card variant="default" padding="lg">
           <h2 className="mb-1 text-sm font-semibold text-foreground">Stats</h2>
           <div className="mt-3">
-            <InfoRow icon={Calendar} label={t('assistant.profile.joinedDate')} value="January 15, 2025" />
-            <InfoRow icon={Users} label={t('assistant.profile.totalReferrals')} value="147" />
-            <InfoRow icon={Trophy} label={t('assistant.profile.rankingPosition')} value="#7 in leaderboard" />
+            <InfoRow icon={Calendar} label={t('assistant.profile.joinedDate')} value={formatDate(user?.created_at)} />
+            <InfoRow icon={Users} label={t('assistant.profile.totalReferrals')} value={String(totalReferrals)} />
+            <InfoRow icon={AtSign} label={t('auth.username')} value={user?.username} />
+            <InfoRow icon={Phone} label="Phone" value={user?.phone} />
+            <InfoRow icon={Mail} label="Email" value={user?.email} />
           </div>
         </Card>
       </motion.div>
@@ -144,9 +167,9 @@ export function AssistantProfilePage() {
           <h2 className="mb-3 text-sm font-semibold text-foreground">{t('assistant.profile.achievements')}</h2>
           <div className="space-y-3">
             {[
-              { label: 'First Referral', desc: 'Sent your first invite', done: true },
-              { label: '10 Registrations', desc: 'Reached 10 successful sign-ups', done: true },
-              { label: '100 Referrals', desc: 'Reach 100 total referrals', done: false, pct: 47 },
+              { label: 'First Referral', desc: 'Sent your first invite', done: totalReferrals >= 1, pct: Math.min(100, totalReferrals * 100) },
+              { label: '10 Registrations', desc: 'Reached 10 successful sign-ups', done: totalReferrals >= 10, pct: Math.min(100, totalReferrals * 10) },
+              { label: '100 Referrals', desc: 'Reach 100 total referrals', done: totalReferrals >= 100, pct: Math.min(100, totalReferrals) },
             ].map(({ label, desc, done, pct }) => (
               <div key={label} className="flex items-center gap-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full', done ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
@@ -155,7 +178,7 @@ export function AssistantProfilePage() {
                 <div className="flex-1 min-w-0">
                   <p className={cn('text-sm font-medium', done ? 'text-foreground' : 'text-muted-foreground')}>{label}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
-                  {!done && pct !== undefined && (
+                  {!done && (
                     <div className="mt-1.5 h-1.5 rounded-full bg-muted overflow-hidden">
                       <div className="h-full rounded-full bg-primary/50" style={{ width: `${pct}%` }} />
                     </div>

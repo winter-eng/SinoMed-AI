@@ -141,7 +141,8 @@
     "passwordMinLength": "Пароль должен содержать минимум 8 символов",
     "rolePatient": "Пользователь",
     "roleAssistant": "Мед. Ассистент",
-    "roleDoctor": "Доктор"
+    "roleDoctor": "Доктор",
+    "username": "Имя пользователя"
   },
   "dashboard": {
     "greeting": "Привет",
@@ -485,7 +486,15 @@
       "title": "История пациентов",
       "subtitle": "История обслуженных пациентов.",
       "completed": "Завершено",
-      "totalLabel": "всего визитов"
+      "totalLabel": "всего визитов",
+      "noPatients": "Пациентов пока нет",
+      "noPatientsDesc": "Пациенты появятся здесь после привязки.",
+      "patientDetail": "Данные пациента",
+      "phone": "Телефон",
+      "email": "Email",
+      "dob": "Дата рождения",
+      "joinedDate": "Дата регистрации",
+      "totalPatients": "Всего пациентов"
     },
     "cases": {
       "title": "Активные случаи",
@@ -496,7 +505,11 @@
       "statusWaiting": "Ожидает",
       "statusReview": "На проверке",
       "statusProgress": "В процессе",
-      "statusCompleted": "Завершено"
+      "statusCompleted": "Завершено",
+      "noAnketas": "Анкет пока нет",
+      "noAnketasDesc": "Новые анкеты появятся здесь.",
+      "caseDetail": "Детали случая",
+      "createdAt": "Создано"
     },
     "settings": {
       "title": "Настройки",
@@ -526,7 +539,10 @@
       "email": "Email",
       "licenseId": "Лицензия ID",
       "workingHours": "Рабочие часы",
-      "logout": "Выйти"
+      "logout": "Выйти",
+      "clinicId": "ID клиники",
+      "username": "Имя пользователя",
+      "joinedDate": "Дата регистрации"
     }
   },
   "assistant": {

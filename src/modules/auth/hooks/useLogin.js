@@ -18,11 +18,11 @@ export function useLogin() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const submitLogin = async ({ email, password, role = 'patient' }) => {
+  const submitLogin = async ({ identifier, password, role = 'patient' }) => {
     setLoading(true)
     setError(null)
     try {
-      await login(email, password, role)
+      await login(identifier, password, role)
       if (role === 'doctor') navigate(ROUTES.DOCTOR.CASES)
       else if (role === 'assistant') navigate(ROUTES.ASSISTANT.REFERRAL)
       else navigate(ROUTES.DASHBOARD)

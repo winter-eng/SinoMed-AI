@@ -141,7 +141,8 @@
     "passwordMinLength": "Parol kamida 8 ta belgidan iborat bo'lishi kerak",
     "rolePatient": "Foydalanuvchi",
     "roleAssistant": "Med. Assistent",
-    "roleDoctor": "Shifokor"
+    "roleDoctor": "Shifokor",
+    "username": "Foydalanuvchi nomi"
   },
   "dashboard": {
     "greeting": "Salom",
@@ -485,7 +486,15 @@
       "title": "Bemor Tarixi",
       "subtitle": "Xizmat ko'rsatilgan bemorlar tarixi.",
       "completed": "Bajarildi",
-      "totalLabel": "jami tashrif"
+      "totalLabel": "jami tashrif",
+      "noPatients": "Hali bemor yo'q",
+      "noPatientsDesc": "Bemorlar bu yerda ko'rinadi.",
+      "patientDetail": "Bemor ma'lumotlari",
+      "phone": "Telefon",
+      "email": "Email",
+      "dob": "Tug'ilgan sana",
+      "joinedDate": "Ro'yxatdan o'tgan sana",
+      "totalPatients": "Jami bemorlar"
     },
     "cases": {
       "title": "Faol Holatlar",
@@ -496,7 +505,11 @@
       "statusWaiting": "Kutilmoqda",
       "statusReview": "Ko'rib chiqilmoqda",
       "statusProgress": "Jarayonda",
-      "statusCompleted": "Bajarildi"
+      "statusCompleted": "Bajarildi",
+      "noAnketas": "Hali anketa yo'q",
+      "noAnketasDesc": "Yangi anketalar bu yerda ko'rinadi.",
+      "caseDetail": "Holat tafsilotlari",
+      "createdAt": "Yaratilgan"
     },
     "settings": {
       "title": "Sozlamalar",
@@ -526,7 +539,10 @@
       "email": "Email",
       "licenseId": "Litsenziya ID",
       "workingHours": "Ish soatlari",
-      "logout": "Chiqish"
+      "logout": "Chiqish",
+      "clinicId": "Klinika ID",
+      "username": "Foydalanuvchi nomi",
+      "joinedDate": "Ro'yxatdan o'tgan sana"
     }
   },
   "assistant": {
