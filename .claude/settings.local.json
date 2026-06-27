@@ -10,7 +10,8 @@
       "Bash(cat)",
       "Read(//tmp/**)",
       "WebFetch(domain:aidiagnostikapi.sangilov.uz)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(xargs grep -l \"doctor\")"
     ]
   }
 }

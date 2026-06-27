@@ -21,7 +21,9 @@ apiClient.interceptors.response.use(
     // the global logout (e.g., the bootstrap token-validation call in AuthProvider).
     const isAuthEndpoint = error?.config?.url?.includes('/auth/')
     const skipLogout = error?.config?._skipLogout
-    if (error?.response?.status === 401 && !isAuthEndpoint && !skipLogout) {
+    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+    const isDevToken = import.meta.env.DEV && token?.startsWith('dev-token')
+    if (error?.response?.status === 401 && !isAuthEndpoint && !skipLogout && !isDevToken) {
       window.dispatchEvent(new Event('auth:logout'))
     }
     return Promise.reject(error)

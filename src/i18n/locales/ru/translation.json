@@ -476,23 +476,122 @@
     },
     "chat": {
       "title": "Чат доктора",
-      "subtitle": "Общение с пациентами появится здесь."
+      "subtitle": "Общение с пациентами.",
+      "inputPlaceholder": "Написать сообщение...",
+      "send": "Отправить",
+      "backToList": "Назад"
     },
     "history": {
       "title": "История пациентов",
-      "subtitle": "История пациентов и аналитика появятся здесь."
+      "subtitle": "История обслуженных пациентов.",
+      "completed": "Завершено",
+      "totalLabel": "всего визитов"
     },
     "cases": {
       "title": "Активные случаи",
-      "subtitle": "Текущие AI-диагнозы и активные случаи появятся здесь."
+      "subtitle": "Текущие AI-диагнозы и активные случаи.",
+      "ageLabel": "Возраст",
+      "riskLabel": "AI Риск",
+      "predictionLabel": "Прогноз",
+      "statusWaiting": "Ожидает",
+      "statusReview": "На проверке",
+      "statusProgress": "В процессе",
+      "statusCompleted": "Завершено"
     },
     "settings": {
       "title": "Настройки",
-      "subtitle": "Настройки доктора появятся здесь."
+      "subtitle": "Настройки аккаунта и интерфейса.",
+      "notifications": "Уведомления",
+      "notifResults": "Новые результаты анализов",
+      "notifMessages": "Новые сообщения",
+      "notifReminders": "Напоминания",
+      "security": "Безопасность",
+      "changePassword": "Изменить пароль",
+      "twoFactor": "Двухфакторная аутентификация",
+      "twoFactorEnabled": "Включено",
+      "twoFactorDisabled": "Отключено",
+      "privacy": "Конфиденциальность",
+      "dataUsage": "Использование данных",
+      "logout": "Выйти"
     },
     "profile": {
       "title": "Профиль доктора",
-      "subtitle": "Профиль и данные аккаунта появятся здесь."
+      "subtitle": "Личные и профессиональные данные.",
+      "editProfile": "Редактировать профиль",
+      "specialization": "Специализация",
+      "hospital": "Больница",
+      "experience": "Опыт",
+      "experienceUnit": "лет",
+      "phone": "Телефон",
+      "email": "Email",
+      "licenseId": "Лицензия ID",
+      "workingHours": "Рабочие часы",
+      "logout": "Выйти"
+    }
+  },
+  "assistant": {
+    "role": "Мед. Ассистент",
+    "nav": {
+      "events": "События",
+      "leaderboard": "Рейтинг",
+      "referral": "Реферал",
+      "settings": "Настройки",
+      "profile": "Профиль"
+    },
+    "events": {
+      "title": "События",
+      "subtitle": "Призовые кампании",
+      "daysLeft": "дн. осталось",
+      "reward": "Приз",
+      "inviteNeeded": "приглашений нужно",
+      "yourProgress": "Ваш прогресс"
+    },
+    "leaderboard": {
+      "title": "Рейтинг",
+      "subtitle": "Станьте лучшим ассистентом",
+      "referrals": "реферал",
+      "you": "Вы"
+    },
+    "referral": {
+      "title": "Реферал",
+      "subtitle": "Приглашайте друзей",
+      "yourCode": "Ваш код",
+      "copyCode": "Копировать код",
+      "share": "Поделиться",
+      "inviteFriends": "Пригласить друзей",
+      "copied": "Скопировано!",
+      "stats": "Статистика",
+      "invited": "Приглашённые",
+      "registered": "Зарегистрированные",
+      "ranking": "Место в рейтинге",
+      "nextReward": "Следующий приз",
+      "progressOf": "из"
+    },
+    "settings": {
+      "title": "Настройки",
+      "notifications": "Уведомления",
+      "notifNewReg": "Новые регистрации",
+      "notifLeader": "Изменения рейтинга",
+      "notifEvents": "Новые события",
+      "security": "Безопасность",
+      "changePassword": "Изменить пароль",
+      "twoFactor": "Двухфакторная аутентификация",
+      "twoFactorEnabled": "Включено",
+      "twoFactorDisabled": "Отключено",
+      "privacy": "Конфиденциальность",
+      "dataUsage": "Использование данных",
+      "logout": "Выйти"
+    },
+    "profile": {
+      "title": "Профиль",
+      "referralCode": "Реферальный код",
+      "joinedDate": "Дата вступления",
+      "totalReferrals": "Всего рефералов",
+      "rankingPosition": "Место в рейтинге",
+      "badges": "Значки",
+      "achievements": "Достижения",
+      "editProfile": "Редактировать профиль",
+      "logout": "Выйти"
     }
   }
 }

@@ -23,4 +23,12 @@ export const ROUTES = {
     SETTINGS: '/doctor/settings',
     PROFILE: '/doctor/profile',
   },
+  ASSISTANT: {
+    ROOT: '/assistant',
+    EVENTS: '/assistant/events',
+    LEADERBOARD: '/assistant/leaderboard',
+    REFERRAL: '/assistant/referral',
+    SETTINGS: '/assistant/settings',
+    PROFILE: '/assistant/profile',
+  },
 }

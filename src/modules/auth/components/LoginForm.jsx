@@ -27,13 +27,16 @@ function isValidUzPhone(phone) {
   return digits.length === 12 && digits.startsWith('998')
 }
 
+const VALID_ROLES = ['patient', 'assistant', 'doctor']
+
 export function LoginForm({ mode = 'login' }) {
   const { t } = useTranslation()
   const { submitLogin, submitRegister, loading, error } = useLogin()
 
-  const [activeRole, setActiveRole] = useState(
-    () => localStorage.getItem(STORAGE_KEYS.LOGIN_ROLE) ?? 'patient',
-  )
+  const [activeRole, setActiveRole] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.LOGIN_ROLE) ?? 'patient'
+    return VALID_ROLES.includes(saved) ? saved : 'patient'
+  })
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -120,7 +123,7 @@ export function LoginForm({ mode = 'login' }) {
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
-              <span className="relative z-10 block truncate">{role.label}</span>
+              <span className="relative z-10 block truncate leading-tight">{role.label}</span>
             </button>
           ))}
         </div>
@@ -144,7 +147,7 @@ export function LoginForm({ mode = 'login' }) {
         </div>
       )}
 
-      {/* Register: Phone Number (primary contact) */}
+      {/* Register: Phone Number */}
       {isRegister && (
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-foreground">{t('auth.phone')}</label>
@@ -166,7 +169,7 @@ export function LoginForm({ mode = 'login' }) {
         </div>
       )}
 
-      {/* Register: Password (required, min 8 chars) */}
+      {/* Register: Password */}
       {isRegister && (
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-foreground">{t('auth.password')}</label>
@@ -196,7 +199,7 @@ export function LoginForm({ mode = 'login' }) {
         </div>
       )}
 
-      {/* Email — required in login, optional in register */}
+      {/* Email */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground">
           {t('auth.email')}

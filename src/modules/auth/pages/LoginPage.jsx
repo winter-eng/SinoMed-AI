@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -9,18 +9,34 @@ import { Logo } from '@/shared/components/ui/Logo'
 import { ROUTES } from '@/shared/constants/routes'
 import { LoginForm } from '../components/LoginForm'
 import { useAuth } from '@/app/providers/AuthProvider'
+// DEV-only — remove this import and the <DevPreviewModal> usage before production
+import { DevPreviewModal } from '../components/DevPreviewModal'
 
 export function LoginPage() {
   const { t } = useTranslation()
-  const { isAuthenticated, isLoading, role, devPreviewDoctor } = useAuth()
+  const { isAuthenticated, isLoading, role } = useAuth()
   const [mode, setMode] = useState('login')
+  const [showDevModal, setShowDevModal] = useState(false)
+  const tapTimesRef = useRef([])
 
-  // Redirect authenticated users to their role-specific workspace
   if (!isLoading && isAuthenticated) {
-    return <Navigate to={role === 'doctor' ? ROUTES.DOCTOR.CASES : ROUTES.DASHBOARD} replace />
+    if (role === 'doctor') return <Navigate to={ROUTES.DOCTOR.CASES} replace />
+    if (role === 'assistant') return <Navigate to={ROUTES.ASSISTANT.REFERRAL} replace />
+    return <Navigate to={ROUTES.DASHBOARD} replace />
   }
 
   const isRegister = mode === 'register'
+
+  // Hidden dev trigger: 5 taps within 2 seconds reveals the developer preview modal
+  const handleHiddenTap = () => {
+    if (!import.meta.env.DEV) return
+    const now = Date.now()
+    tapTimesRef.current = [...tapTimesRef.current, now].filter((t) => now - t < 2000)
+    if (tapTimesRef.current.length >= 5) {
+      tapTimesRef.current = []
+      setShowDevModal(true)
+    }
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -45,7 +61,7 @@ export function LoginPage() {
           transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="w-full max-w-sm"
         >
-          {/* Title — each mode gets its own stable key so props never bleed into the exiting element */}
+          {/* Title */}
           <div className="mb-8 flex flex-col items-center gap-4">
             <Logo size="xl" showText={false} />
             <AnimatePresence mode="wait">
@@ -78,32 +94,9 @@ export function LoginPage() {
             </AnimatePresence>
           </div>
 
-          {/* Form card — same fix: hardcoded mode per child prevents prop leakage during exit */}
+          {/* Form card — key={mode} remounts LoginForm on switch, preventing blank-form bug */}
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <AnimatePresence mode="wait">
-              {mode === 'login' && (
-                <motion.div
-                  key="login-form"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <LoginForm mode="login" />
-                </motion.div>
-              )}
-              {mode === 'register' && (
-                <motion.div
-                  key="register-form"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <LoginForm mode="register" />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <LoginForm key={mode} mode={mode} />
           </div>
 
           {/* Mode toggle */}
@@ -111,25 +104,27 @@ export function LoginPage() {
             {isRegister ? t('auth.haveAccount') : t('auth.noAccount')}{' '}
             <button
               onClick={() => setMode(isRegister ? 'login' : 'register')}
-              className="text-primary hover:underline font-medium"
+              className="font-medium text-primary hover:underline"
             >
               {isRegister ? t('auth.backToLogin') : t('auth.register')}
             </button>
           </p>
 
-          {/* Dev preview — stripped from production builds by Vite tree-shaking */}
           {import.meta.env.DEV && (
-            <div className="mt-4 text-center">
-              <button
-                onClick={devPreviewDoctor}
-                className="text-xs text-muted-foreground/50 hover:text-muted-foreground border border-dashed border-border/50 hover:border-border rounded-lg px-3 py-1.5 transition-colors"
-              >
-                Developer Preview — Doctor
-              </button>
-            </div>
+            <button
+              onClick={() => setShowDevModal(true)}
+              className="mt-5 w-full rounded-xl border border-dashed border-border bg-muted/30 py-2 text-xs font-mono text-muted-foreground hover:bg-muted transition-colors"
+            >
+              DEV PREVIEW
+            </button>
           )}
         </motion.div>
       </main>
+
+      {/* DEV only — remove before production */}
+      {import.meta.env.DEV && (
+        <DevPreviewModal isOpen={showDevModal} onClose={() => setShowDevModal(false)} />
+      )}
     </div>
   )
 }

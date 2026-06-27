@@ -23,7 +23,9 @@ export function useLogin() {
     setError(null)
     try {
       await login(email, password, role)
-      navigate(role === 'doctor' ? ROUTES.DOCTOR.CASES : ROUTES.DASHBOARD)
+      if (role === 'doctor') navigate(ROUTES.DOCTOR.CASES)
+      else if (role === 'assistant') navigate(ROUTES.ASSISTANT.REFERRAL)
+      else navigate(ROUTES.DASHBOARD)
     } catch (err) {
       setError(parseApiError(err) ?? t('auth.loginError'))
     } finally {

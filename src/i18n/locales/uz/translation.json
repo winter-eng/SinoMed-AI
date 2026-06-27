@@ -476,23 +476,122 @@
     },
     "chat": {
       "title": "Shifokor Chati",
-      "subtitle": "Bemorlar bilan muloqot tez orada qo'shiladi."
+      "subtitle": "Bemorlar bilan muloqot.",
+      "inputPlaceholder": "Xabar yozing...",
+      "send": "Yuborish",
+      "backToList": "Orqaga"
     },
     "history": {
       "title": "Bemor Tarixi",
-      "subtitle": "Bemor tarixi va analitiklarni bu yerda ko'ring."
+      "subtitle": "Xizmat ko'rsatilgan bemorlar tarixi.",
+      "completed": "Bajarildi",
+      "totalLabel": "jami tashrif"
     },
     "cases": {
       "title": "Faol Holatlar",
-      "subtitle": "Joriy AI tashxislari va faol holatlar tez orada qo'shiladi."
+      "subtitle": "Joriy AI tashxislari va faol holatlar.",
+      "ageLabel": "Yosh",
+      "riskLabel": "AI Xavf",
+      "predictionLabel": "Bashorat",
+      "statusWaiting": "Kutilmoqda",
+      "statusReview": "Ko'rib chiqilmoqda",
+      "statusProgress": "Jarayonda",
+      "statusCompleted": "Bajarildi"
     },
     "settings": {
       "title": "Sozlamalar",
-      "subtitle": "Shifokor sozlamalari tez orada qo'shiladi."
+      "subtitle": "Hisob va interfeys sozlamalari.",
+      "notifications": "Bildirishnomalar",
+      "notifResults": "Yangi tahlil natijalari",
+      "notifMessages": "Yangi xabarlar",
+      "notifReminders": "Eslatmalar",
+      "security": "Xavfsizlik",
+      "changePassword": "Parolni o'zgartirish",
+      "twoFactor": "Ikki bosqichli tasdiqlash",
+      "twoFactorEnabled": "Yoqilgan",
+      "twoFactorDisabled": "O'chirilgan",
+      "privacy": "Maxfiylik",
+      "dataUsage": "Ma'lumotlardan foydalanish",
+      "logout": "Chiqish"
     },
     "profile": {
       "title": "Shifokor Profili",
-      "subtitle": "Profil va hisob ma'lumotlari tez orada qo'shiladi."
+      "subtitle": "Shaxsiy va professional ma'lumotlar.",
+      "editProfile": "Profilni tahrirlash",
+      "specialization": "Mutaxassislik",
+      "hospital": "Shifoxona",
+      "experience": "Tajriba",
+      "experienceUnit": "yil",
+      "phone": "Telefon",
+      "email": "Email",
+      "licenseId": "Litsenziya ID",
+      "workingHours": "Ish soatlari",
+      "logout": "Chiqish"
+    }
+  },
+  "assistant": {
+    "role": "Med. Assistent",
+    "nav": {
+      "events": "Tadbirlar",
+      "leaderboard": "Reyting",
+      "referral": "Referal",
+      "settings": "Sozlamalar",
+      "profile": "Profil"
+    },
+    "events": {
+      "title": "Tadbirlar",
+      "subtitle": "Sovrinli kampaniyalar",
+      "daysLeft": "kun qoldi",
+      "reward": "Sovrin",
+      "inviteNeeded": "ta taklif kerak",
+      "yourProgress": "Sizning natijangiz"
+    },
+    "leaderboard": {
+      "title": "Reyting",
+      "subtitle": "Eng yaxshi assistent bo'ling",
+      "referrals": "referal",
+      "you": "Siz"
+    },
+    "referral": {
+      "title": "Referal",
+      "subtitle": "Do'stlaringizni taklif qiling",
+      "yourCode": "Sizning kodingiz",
+      "copyCode": "Kodni nusxalash",
+      "share": "Ulashish",
+      "inviteFriends": "Do'stlarni taklif qilish",
+      "copied": "Nusxalandi!",
+      "stats": "Statistika",
+      "invited": "Taklif qilinganlar",
+      "registered": "Ro'yxatdan o'tganlar",
+      "ranking": "Reyting o'rni",
+      "nextReward": "Keyingi sovrin",
+      "progressOf": "dan"
+    },
+    "settings": {
+      "title": "Sozlamalar",
+      "notifications": "Bildirishnomalar",
+      "notifNewReg": "Yangi ro'yxatdan o'tish",
+      "notifLeader": "Reyting o'zgarishi",
+      "notifEvents": "Yangi tadbirlar",
+      "security": "Xavfsizlik",
+      "changePassword": "Parolni o'zgartirish",
+      "twoFactor": "Ikki bosqichli tasdiqlash",
+      "twoFactorEnabled": "Yoqilgan",
+      "twoFactorDisabled": "O'chirilgan",
+      "privacy": "Maxfiylik",
+      "dataUsage": "Ma'lumotlardan foydalanish",
+      "logout": "Chiqish"
+    },
+    "profile": {
+      "title": "Profil",
+      "referralCode": "Referal kod",
+      "joinedDate": "Qo'shilgan sana",
+      "totalReferrals": "Jami referallar",
+      "rankingPosition": "Reyting o'rni",
+      "badges": "Nishonlar",
+      "achievements": "Yutuqlar",
+      "editProfile": "Profilni tahrirlash",
+      "logout": "Chiqish"
     }
   }
 }

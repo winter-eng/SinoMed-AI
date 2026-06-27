@@ -15,6 +15,7 @@ export function PatientGuardLayout() {
   if (isLoading) return <LoadingScreen />
   if (!isAuthenticated) return <Navigate to={ROUTES.AUTH.LOGIN} replace />
   if (role === 'doctor') return <Navigate to={ROUTES.DOCTOR.CASES} replace />
+  if (role === 'assistant') return <Navigate to={ROUTES.ASSISTANT.REFERRAL} replace />
   return <Outlet />
 }
 
@@ -23,5 +24,13 @@ export function DoctorGuardLayout() {
   if (isLoading) return <LoadingScreen />
   if (!isAuthenticated) return <Navigate to={ROUTES.AUTH.LOGIN} replace />
   if (role !== 'doctor') return <Navigate to={ROUTES.DASHBOARD} replace />
+  return <Outlet />
+}
+
+export function AssistantGuardLayout() {
+  const { isAuthenticated, isLoading, role } = useAuth()
+  if (isLoading) return <LoadingScreen />
+  if (!isAuthenticated) return <Navigate to={ROUTES.AUTH.LOGIN} replace />
+  if (role !== 'assistant') return <Navigate to={ROUTES.DASHBOARD} replace />
   return <Outlet />
 }

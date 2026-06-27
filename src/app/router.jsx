@@ -1,6 +1,6 @@
 import { createBrowserRouter, Link, Navigate } from 'react-router-dom'
 import { WebAppShell } from '@/shared/components/layout/WebAppShell'
-import { PatientGuardLayout, DoctorGuardLayout } from '@/shared/components/common/AuthGuard'
+import { PatientGuardLayout, DoctorGuardLayout, AssistantGuardLayout } from '@/shared/components/common/AuthGuard'
 import { LandingPage } from '@/modules/landing/pages/LandingPage'
 import { LoginPage } from '@/modules/auth/pages/LoginPage'
 import { DashboardPage } from '@/modules/dashboard/pages/DashboardPage'
@@ -17,6 +17,12 @@ import { PatientHistoryPage } from '@/modules/doctor/pages/PatientHistoryPage'
 import { ActiveCasesPage } from '@/modules/doctor/pages/ActiveCasesPage'
 import { DoctorSettingsPage } from '@/modules/doctor/pages/DoctorSettingsPage'
 import { DoctorProfilePage } from '@/modules/doctor/pages/DoctorProfilePage'
+import { AssistantLayout } from '@/modules/assistant/components/AssistantLayout'
+import { EventsPage } from '@/modules/assistant/pages/EventsPage'
+import { LeaderboardPage } from '@/modules/assistant/pages/LeaderboardPage'
+import { ReferralPage } from '@/modules/assistant/pages/ReferralPage'
+import { AssistantSettingsPage } from '@/modules/assistant/pages/AssistantSettingsPage'
+import { AssistantProfilePage } from '@/modules/assistant/pages/AssistantProfilePage'
 import { ROUTES } from '@/shared/constants/routes'
 
 function NotFoundPage() {
@@ -76,6 +82,24 @@ export const router = createBrowserRouter([
           { path: '/doctor/cases', element: <ActiveCasesPage /> },
           { path: '/doctor/settings', element: <DoctorSettingsPage /> },
           { path: '/doctor/profile', element: <DoctorProfilePage /> },
+        ],
+      },
+    ],
+  },
+
+  // Assistant workspace
+  {
+    element: <AssistantGuardLayout />,
+    children: [
+      {
+        element: <AssistantLayout />,
+        children: [
+          { path: '/assistant', element: <Navigate to={ROUTES.ASSISTANT.REFERRAL} replace /> },
+          { path: '/assistant/events', element: <EventsPage /> },
+          { path: '/assistant/leaderboard', element: <LeaderboardPage /> },
+          { path: '/assistant/referral', element: <ReferralPage /> },
+          { path: '/assistant/settings', element: <AssistantSettingsPage /> },
+          { path: '/assistant/profile', element: <AssistantProfilePage /> },
         ],
       },
     ],
