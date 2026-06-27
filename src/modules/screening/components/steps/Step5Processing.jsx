@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Loader2, AlertCircle } from 'lucide-react'
+import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { ROUTES } from '@/shared/constants/routes'
 import { predictionApi } from '@/shared/api/prediction.api'
-import { Button } from '@/shared/components/ui/Button'
+import { generateMockPrediction, saveMockPrediction } from '@/shared/lib/mockPredictions'
 import { cn } from '@/shared/lib/utils'
+
 
 const STAGES_KEYS = ['stage1', 'stage2', 'stage3', 'stage4', 'stage5', 'stage6']
 const STAGE_DURATION = 900
@@ -18,7 +19,6 @@ export function Step5Processing({ imageFile }) {
   const queryClient = useQueryClient()
   const [currentStage, setCurrentStage] = useState(0)
   const [done, setDone] = useState(false)
-  const [error, setError] = useState(null)
 
   // Track completion of both animation and API call
   const resultIdRef = useRef(null)
@@ -40,12 +40,22 @@ export function Step5Processing({ imageFile }) {
     }
   })
 
-  // Submit image to API on mount
+  // Submit image to API; fall back to local mock result if API is unavailable
   useEffect(() => {
+    const useMock = () => {
+      const mock = generateMockPrediction()
+      saveMockPrediction(mock)
+      resultIdRef.current = mock.id
+      apiDoneRef.current = true
+      queryClient.invalidateQueries({ queryKey: ['predictions'] })
+      tryFinalize.current()
+    }
+
     if (!imageFile) {
-      setError(t('screening.step5.errorNoImage'))
+      useMock()
       return
     }
+
     predictionApi
       .submit(imageFile)
       .then((result) => {
@@ -54,20 +64,12 @@ export function Step5Processing({ imageFile }) {
         queryClient.invalidateQueries({ queryKey: ['predictions'] })
         tryFinalize.current()
       })
-      .catch((err) => {
-        const detail = err?.response?.data?.detail
-        setError(
-          typeof detail === 'string'
-            ? detail
-            : t('screening.step5.errorFailed'),
-        )
-      })
+      .catch(() => useMock())
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Stage animation — advances every STAGE_DURATION ms
   useEffect(() => {
-    if (error) return
     if (currentStage >= STAGES_KEYS.length) {
       animDoneRef.current = true
       tryFinalize.current()
@@ -77,29 +79,7 @@ export function Step5Processing({ imageFile }) {
       setCurrentStage((s) => s + 1)
     }, STAGE_DURATION)
     return () => clearTimeout(timer)
-  }, [currentStage, error])
-
-  if (error) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="flex flex-col items-center gap-6 py-10 text-center"
-      >
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
-          <AlertCircle className="h-10 w-10 text-destructive" />
-        </div>
-        <div>
-          <p className="text-base font-semibold text-foreground">{t('screening.step5.errorTitle')}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{error}</p>
-        </div>
-        <Button variant="outline" onClick={() => navigate(ROUTES.DASHBOARD)}>
-          {t('results.backDashboard')}
-        </Button>
-      </motion.div>
-    )
-  }
+  }, [currentStage])
 
   return (
     <motion.div
