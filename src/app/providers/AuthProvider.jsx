@@ -87,8 +87,19 @@ export function AuthProvider({ children }) {
     setAuth({ user, token: access_token, isAuthenticated: true, isLoading: false, role: 'patient' })
   }, [])
 
+  // Development-only: bypass auth and open a fake doctor session for UI testing.
+  // import.meta.env.DEV is false in production builds, so the body is tree-shaken.
+  const devPreviewDoctor = useCallback(() => {
+    if (!import.meta.env.DEV) return
+    const devUser = { id: 'dev-doctor', full_name: 'Demo Doctor', specialization: 'Cardiologist' }
+    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'dev-token')
+    localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'doctor')
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(devUser))
+    setAuth({ user: devUser, token: 'dev-token', isAuthenticated: true, isLoading: false, role: 'doctor' })
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ ...auth, login, register, logout }}>
+    <AuthContext.Provider value={{ ...auth, login, register, logout, devPreviewDoctor }}>
       {children}
     </AuthContext.Provider>
   )
