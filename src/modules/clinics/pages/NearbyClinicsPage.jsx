@@ -4,12 +4,6 @@ import { motion } from 'framer-motion'
 import { MapPin, ExternalLink, Loader2, Phone } from 'lucide-react'
 import { clinicApi } from '@/shared/api/clinic.api'
 
-const MOCK_CLINICS = [
-  { id: 'm1', name: 'Toshkent Tibbiy Markazi', address: 'Yunusobod tumani, 7-mavze', phone: '+998 71 123 45 67', latitude: 41.3111, longitude: 69.2797 },
-  { id: 'm2', name: 'Shifo Klinikasi', address: "Chilonzor tumani, Katartal ko'chasi 12", phone: '+998 71 234 56 78', latitude: 41.2837, longitude: 69.2004 },
-  { id: 'm3', name: "Ko'z va Retina Markazi", address: "Mirzo Ulug'bek tumani, Amir Temur ko'chasi 108", phone: '+998 71 345 67 89', latitude: 41.3264, longitude: 69.2878 },
-]
-
 function haversineKm(lat1, lon1, lat2, lon2) {
   const R = 6371
   const toRad = (d) => (d * Math.PI) / 180
@@ -32,6 +26,7 @@ export function NearbyClinicsPage() {
   const { t } = useTranslation()
   const [clinics, setClinics] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [userLoc, setUserLoc] = useState(null)
 
   useEffect(() => {
@@ -45,12 +40,10 @@ export function NearbyClinicsPage() {
       apiCall
         .then((data) => {
           if (!cancelled) {
-            // GET /clinics returns ClinicResponse[] but GET /clinics/nearest
-            // returns a single ClinicResponse — normalise to array.
             setClinics(Array.isArray(data) ? data : [data])
           }
         })
-        .catch(() => { if (!cancelled) setClinics(MOCK_CLINICS) })
+        .catch(() => { if (!cancelled) setError(true) })
         .finally(() => { if (!cancelled) setLoading(false) })
     }
 
@@ -63,7 +56,6 @@ export function NearbyClinicsPage() {
           fetchClinics(latitude, longitude)
         },
         () => {
-          // User denied geolocation or error — fall back to full list
           if (!cancelled) fetchClinics(null, null)
         },
         { timeout: 5000 },
@@ -88,11 +80,20 @@ export function NearbyClinicsPage() {
         </div>
       )}
 
-      {!loading && clinics?.length === 0 && (
+      {error && (
+        <div className="flex flex-col items-center gap-3 py-10 text-center">
+          <p className="text-sm font-medium text-foreground">{t('common.error')}</p>
+          <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">
+            {t('common.retry')}
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && clinics?.length === 0 && (
         <p className="py-10 text-center text-sm text-muted-foreground">{t('clinics.noneFound')}</p>
       )}
 
-      {!loading && clinics && clinics.length > 0 && (
+      {!loading && !error && clinics && clinics.length > 0 && (
         <div className="space-y-3">
           {clinics.map((clinic, i) => {
             const distance =
@@ -130,7 +131,6 @@ export function NearbyClinicsPage() {
                             {clinic.phone}
                           </span>
                         )}
-                        {/* TODO: hours / open-closed status not available in ClinicResponse */}
                       </div>
                     </div>
                   </div>

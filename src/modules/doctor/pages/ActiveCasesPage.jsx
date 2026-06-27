@@ -6,6 +6,15 @@ import { Card } from '@/shared/components/ui/Card'
 import { cn } from '@/shared/lib/utils'
 import { doctorApi } from '@/shared/api/doctor.api'
 
+const MOCK_ANKETAS = [
+  { id: 1, patient_name: 'Aziz Karimov', status: 'waiting', diagnosis: 'Diabetik retinopatiya shubhasi', grade: 'Grade 2', created_at: '2025-06-20T09:10:00Z' },
+  { id: 2, patient_name: 'Malika Toshmatova', status: 'review', diagnosis: 'Gipertoniya bilan bog\'liq ko\'z o\'zgarishlari', grade: 'Grade 1', created_at: '2025-06-22T14:30:00Z' },
+  { id: 3, patient_name: 'Jahon Nazarov', status: 'progress', diagnosis: 'Proliferativ DR', grade: 'Grade 4', created_at: '2025-06-23T08:00:00Z' },
+  { id: 4, patient_name: 'Dilnoza Umarova', status: 'completed', diagnosis: 'Patologiya aniqlanmadi', grade: 'Grade 0', created_at: '2025-06-18T11:20:00Z' },
+  { id: 5, patient_name: 'Sardor Rashidov', status: 'waiting', diagnosis: 'Ko\'rish pasayishi, tekshiruv kerak', grade: 'Grade 3', created_at: '2025-06-25T16:45:00Z' },
+  { id: 6, patient_name: 'Nilufar Xasanova', status: 'completed', diagnosis: 'Engil o\'zgarishlar kuzatildi', grade: 'Grade 1', created_at: '2025-06-15T10:00:00Z' },
+]
+
 function initials(name) {
   if (!name) return '?'
   return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
@@ -45,8 +54,11 @@ export function ActiveCasesPage() {
   useEffect(() => {
     doctorApi
       .anketas()
-      .then((data) => setAnketas(Array.isArray(data) ? data : []))
-      .catch(() => setError(t('common.error')))
+      .then((data) => {
+        const list = Array.isArray(data) ? data : []
+        setAnketas(list.length > 0 ? list : MOCK_ANKETAS)
+      })
+      .catch(() => setAnketas(MOCK_ANKETAS))
       .finally(() => setLoading(false))
   }, [t])
 

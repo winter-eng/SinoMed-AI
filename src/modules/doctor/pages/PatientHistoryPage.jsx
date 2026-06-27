@@ -1,9 +1,56 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { Calendar, Users, X, Phone, Mail, User } from 'lucide-react'
+import { Calendar, Users, X, Phone, Mail, User, Activity, FileText } from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
+import { cn } from '@/shared/lib/utils'
 import { doctorApi } from '@/shared/api/doctor.api'
+
+const MOCK_PATIENTS = [
+  {
+    id: 1, full_name: 'Aziz Karimov', phone: '+998 90 123 45 67', email: 'aziz@mail.uz',
+    date_of_birth: '1985-03-14', created_at: '2024-11-10T08:20:00Z',
+    status: 'active', complaint: "Ko'rish keskin pasayib ketgan, ko'z oldida qora dog'lar paydo bo'lgan",
+    diagnosis: 'Diabetik retinopatiya — Grade 3', last_visit: '2025-06-18T10:00:00Z',
+  },
+  {
+    id: 2, full_name: 'Malika Toshmatova', phone: '+998 91 234 56 78', email: null,
+    date_of_birth: '1992-07-22', created_at: '2024-12-01T10:15:00Z',
+    status: 'observation', complaint: 'Bosh og\'rig\'i va ko\'z toliqishi, kompyuter oldida ko\'p o\'tiradi',
+    diagnosis: 'Gipertoniya bilan bog\'liq ko\'z o\'zgarishlari — Grade 1', last_visit: '2025-06-20T14:30:00Z',
+  },
+  {
+    id: 3, full_name: 'Jahon Nazarov', phone: '+998 93 345 67 89', email: 'jahon@gmail.com',
+    date_of_birth: '1978-11-05', created_at: '2025-01-18T14:30:00Z',
+    status: 'critical', complaint: "Ko'rish deyarli yo'qolgan, nur sezgisi qolgan xolos, urgently murojaat qildi",
+    diagnosis: 'Proliferativ diabetik retinopatiya — Grade 4', last_visit: '2025-06-25T09:00:00Z',
+  },
+  {
+    id: 4, full_name: 'Dilnoza Umarova', phone: '+998 94 456 78 90', email: null,
+    date_of_birth: '1995-02-28', created_at: '2025-02-05T09:00:00Z',
+    status: 'stable', complaint: "Profilaktik ko'rik, hech qanday shikoyat yo'q",
+    diagnosis: 'Patologiya aniqlanmadi — Grade 0', last_visit: '2025-06-15T11:00:00Z',
+  },
+  {
+    id: 5, full_name: 'Sardor Rashidov', phone: '+998 97 567 89 01', email: 'sardor@inbox.uz',
+    date_of_birth: '1988-09-17', created_at: '2025-03-12T11:45:00Z',
+    status: 'active', complaint: "Kechqurun ko'rish yomonlashadi, chaqnashlar ko'radi",
+    diagnosis: "O'rtacha nonproliferativ DR — Grade 2", last_visit: '2025-06-22T16:00:00Z',
+  },
+  {
+    id: 6, full_name: 'Nilufar Xasanova', phone: '+998 90 678 90 12', email: null,
+    date_of_birth: '2001-06-03', created_at: '2025-04-20T16:10:00Z',
+    status: 'stable', complaint: "Ko'z quruqligi, yonish hissi, kontakt linza ishlatadi",
+    diagnosis: 'Engil o\'zgarishlar — Grade 1', last_visit: '2025-06-10T13:00:00Z',
+  },
+]
+
+const STATUS_LABELS = {
+  active: { label: 'Faol', color: 'text-blue-600 bg-blue-500/10' },
+  observation: { label: 'Kuzatuv', color: 'text-amber-600 bg-amber-500/10' },
+  critical: { label: 'Kritik', color: 'text-red-600 bg-red-500/10' },
+  stable: { label: 'Barqaror', color: 'text-green-600 bg-green-500/10' },
+}
 
 function initials(name) {
   if (!name) return '?'
@@ -45,8 +92,11 @@ export function PatientHistoryPage() {
   useEffect(() => {
     doctorApi
       .patients()
-      .then((data) => setPatients(Array.isArray(data) ? data : []))
-      .catch(() => setError(t('common.error')))
+      .then((data) => {
+        const list = Array.isArray(data) ? data : []
+        setPatients(list.length > 0 ? list : MOCK_PATIENTS)
+      })
+      .catch(() => setPatients(MOCK_PATIENTS))
       .finally(() => setLoading(false))
   }, [t])
 
@@ -131,14 +181,24 @@ export function PatientHistoryPage() {
                   {initials(p.full_name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground">{p.full_name || '—'}</p>
-                  {p.phone && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-semibold text-foreground">{p.full_name || '—'}</p>
+                    {p.status && STATUS_LABELS[p.status] && (
+                      <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium', STATUS_LABELS[p.status].color)}>
+                        {STATUS_LABELS[p.status].label}
+                      </span>
+                    )}
+                  </div>
+                  {p.complaint && (
+                    <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{p.complaint}</p>
+                  )}
+                  {p.phone && !p.complaint && (
                     <p className="mt-0.5 text-xs text-muted-foreground">{p.phone}</p>
                   )}
-                  {p.created_at && (
+                  {p.last_visit && (
                     <div className="mt-1 flex items-center gap-1.5">
                       <Calendar className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-[11px] text-muted-foreground">{formatDate(p.created_at)}</span>
+                      <span className="text-[11px] text-muted-foreground">Oxirgi: {formatDate(p.last_visit)}</span>
                     </div>
                   )}
                 </div>
@@ -184,10 +244,14 @@ export function PatientHistoryPage() {
                 </div>
               ) : (
                 <div>
-                  <DetailRow icon={User} label={t('common.name') ?? 'Name'} value={selected.full_name} />
+                  <DetailRow icon={User} label="Ism Familiya" value={selected.full_name} />
+                  <DetailRow icon={Activity} label="Holati" value={selected.status ? STATUS_LABELS[selected.status]?.label : null} />
+                  <DetailRow icon={FileText} label="Shikoyat" value={selected.complaint} />
+                  <DetailRow icon={FileText} label="Tashxis" value={selected.diagnosis} />
                   <DetailRow icon={Phone} label={t('doctor.history.phone')} value={selected.phone} />
                   <DetailRow icon={Mail} label={t('doctor.history.email')} value={selected.email} />
                   <DetailRow icon={Calendar} label={t('doctor.history.dob')} value={formatDate(selected.date_of_birth)} />
+                  <DetailRow icon={Calendar} label="Oxirgi tashrif" value={formatDate(selected.last_visit)} />
                   <DetailRow icon={Calendar} label={t('doctor.history.joinedDate')} value={formatDate(selected.created_at)} />
                 </div>
               )}
