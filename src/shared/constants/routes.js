@@ -15,4 +15,12 @@ export const ROUTES = {
   SETTINGS: '/settings',
   PROFILE: '/profile',
   HEALTH_PROFILE: '/health-profile',
+  DOCTOR: {
+    ROOT: '/doctor',
+    CHAT: '/doctor/chat',
+    HISTORY: '/doctor/history',
+    CASES: '/doctor/cases',
+    SETTINGS: '/doctor/settings',
+    PROFILE: '/doctor/profile',
+  },
 }

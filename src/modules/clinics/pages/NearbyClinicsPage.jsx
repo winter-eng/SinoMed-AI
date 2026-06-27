@@ -38,7 +38,13 @@ export function NearbyClinicsPage() {
         : clinicApi.list()
 
       apiCall
-        .then((data) => { if (!cancelled) setClinics(data) })
+        .then((data) => {
+          if (!cancelled) {
+            // GET /clinics returns ClinicResponse[] but GET /clinics/nearest
+            // returns a single ClinicResponse — normalise to array.
+            setClinics(Array.isArray(data) ? data : [data])
+          }
+        })
         .catch(() => { if (!cancelled) setError(true) })
         .finally(() => { if (!cancelled) setLoading(false) })
     }

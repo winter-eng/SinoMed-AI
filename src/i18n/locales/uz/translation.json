@@ -129,7 +129,19 @@
     "haveAccount": "Hisobingiz bormi?",
     "backToLogin": "Kirish",
     "loginError": "Noto'g'ri email yoki parol",
-    "registerError": "Ro'yxatdan o'tishda xato yuz berdi"
+    "registerError": "Ro'yxatdan o'tishda xato yuz berdi",
+    "phone": "Telefon raqam",
+    "phonePlaceholder": "+998 90 123 45 67",
+    "phoneError": "To'g'ri Uzbekiston telefon raqamini kiriting",
+    "emailHint": "Ixtiyoriy. Hisobni tiklash va bildirishnomalar uchun ishlatiladi.",
+    "referralCode": "Referal kod",
+    "referralCodePlaceholder": "Referal kodni kiriting (ixtiyoriy)",
+    "referralCodeHint": "Ixtiyoriy. Kimdir sizi taklif qilgan bo'lsa, referal kodni kiriting.",
+    "optional": "ixtiyoriy",
+    "passwordMinLength": "Parol kamida 8 ta belgidan iborat bo'lishi kerak",
+    "rolePatient": "Foydalanuvchi",
+    "roleAssistant": "Med. Assistent",
+    "roleDoctor": "Shifokor"
   },
   "dashboard": {
     "greeting": "Salom",
@@ -452,5 +464,35 @@
     "allergiesPlaceholder": "Penitsillin, changli o'tlar...",
     "chronicDiseases": "Surunkali kasalliklar",
     "chronicDiseasesPlaceholder": "Gipertenziya, astma..."
+  },
+  "doctor": {
+    "role": "Shifokor",
+    "nav": {
+      "chat": "Chat",
+      "history": "Tarix",
+      "cases": "Holatlar",
+      "settings": "Sozlamalar",
+      "profile": "Profil"
+    },
+    "chat": {
+      "title": "Shifokor Chati",
+      "subtitle": "Bemorlar bilan muloqot tez orada qo'shiladi."
+    },
+    "history": {
+      "title": "Bemor Tarixi",
+      "subtitle": "Bemor tarixi va analitiklarni bu yerda ko'ring."
+    },
+    "cases": {
+      "title": "Faol Holatlar",
+      "subtitle": "Joriy AI tashxislari va faol holatlar tez orada qo'shiladi."
+    },
+    "settings": {
+      "title": "Sozlamalar",
+      "subtitle": "Shifokor sozlamalari tez orada qo'shiladi."
+    },
+    "profile": {
+      "title": "Shifokor Profili",
+      "subtitle": "Profil va hisob ma'lumotlari tez orada qo'shiladi."
+    }
   }
 }

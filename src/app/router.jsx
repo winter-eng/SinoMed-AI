@@ -1,6 +1,6 @@
-import { createBrowserRouter, Link } from 'react-router-dom'
+import { createBrowserRouter, Link, Navigate } from 'react-router-dom'
 import { WebAppShell } from '@/shared/components/layout/WebAppShell'
-import { AuthGuardLayout } from '@/shared/components/common/AuthGuard'
+import { PatientGuardLayout, DoctorGuardLayout } from '@/shared/components/common/AuthGuard'
 import { LandingPage } from '@/modules/landing/pages/LandingPage'
 import { LoginPage } from '@/modules/auth/pages/LoginPage'
 import { DashboardPage } from '@/modules/dashboard/pages/DashboardPage'
@@ -11,6 +11,12 @@ import { SupportPage } from '@/modules/support/pages/SupportPage'
 import { NearbyClinicsPage } from '@/modules/clinics/pages/NearbyClinicsPage'
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
 import { HealthProfilePage } from '@/modules/health-profile/pages/HealthProfilePage'
+import { DoctorLayout } from '@/modules/doctor/components/DoctorLayout'
+import { DoctorChatPage } from '@/modules/doctor/pages/DoctorChatPage'
+import { PatientHistoryPage } from '@/modules/doctor/pages/PatientHistoryPage'
+import { ActiveCasesPage } from '@/modules/doctor/pages/ActiveCasesPage'
+import { DoctorSettingsPage } from '@/modules/doctor/pages/DoctorSettingsPage'
+import { DoctorProfilePage } from '@/modules/doctor/pages/DoctorProfilePage'
 import { ROUTES } from '@/shared/constants/routes'
 
 function NotFoundPage() {
@@ -36,8 +42,10 @@ function NotFoundPage() {
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
   { path: '/auth/login', element: <LoginPage /> },
+
+  // Patient workspace
   {
-    element: <AuthGuardLayout />,
+    element: <PatientGuardLayout />,
     children: [
       { path: '/analysis/new', element: <ScreeningPage /> },
       { path: '/analysis/:id', element: <AnalysisResultPage /> },
@@ -54,5 +62,24 @@ export const router = createBrowserRouter([
       },
     ],
   },
+
+  // Doctor workspace
+  {
+    element: <DoctorGuardLayout />,
+    children: [
+      {
+        element: <DoctorLayout />,
+        children: [
+          { path: '/doctor', element: <Navigate to={ROUTES.DOCTOR.CASES} replace /> },
+          { path: '/doctor/chat', element: <DoctorChatPage /> },
+          { path: '/doctor/history', element: <PatientHistoryPage /> },
+          { path: '/doctor/cases', element: <ActiveCasesPage /> },
+          { path: '/doctor/settings', element: <DoctorSettingsPage /> },
+          { path: '/doctor/profile', element: <DoctorProfilePage /> },
+        ],
+      },
+    ],
+  },
+
   { path: '*', element: <NotFoundPage /> },
 ])

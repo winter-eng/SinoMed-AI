@@ -11,30 +11,46 @@ export function AuthProvider({ children }) {
     token: null,
     isAuthenticated: false,
     isLoading: true,
+    role: null,
   })
 
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
     localStorage.removeItem(STORAGE_KEYS.AUTH_USER)
-    setAuth({ user: null, token: null, isAuthenticated: false, isLoading: false })
+    localStorage.removeItem(STORAGE_KEYS.USER_ROLE)
+    setAuth({ user: null, token: null, isAuthenticated: false, isLoading: false, role: null })
   }, [])
 
-  // Bootstrap: check stored token and validate with server
+  // Bootstrap: restore session from localStorage.
+  // Patient role validates the token against /patients/me.
+  // Non-patient roles (doctor, etc.) restore directly from cache — they have
+  // their own /me endpoints that will be wired up per-role later.
   useEffect(() => {
     const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+    const savedRole = localStorage.getItem(STORAGE_KEYS.USER_ROLE) ?? 'patient'
+
     if (!token) {
       setAuth((prev) => ({ ...prev, isLoading: false }))
       return
     }
+
+    if (savedRole !== 'patient') {
+      const savedUser = localStorage.getItem(STORAGE_KEYS.AUTH_USER)
+      const user = savedUser ? JSON.parse(savedUser) : null
+      setAuth({ user, token, isAuthenticated: true, isLoading: false, role: savedRole })
+      return
+    }
+
     patientApi
-      .me()
+      .me({ _skipLogout: true })
       .then((user) => {
-        setAuth({ user, token, isAuthenticated: true, isLoading: false })
+        setAuth({ user, token, isAuthenticated: true, isLoading: false, role: savedRole })
       })
       .catch(() => {
         localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
         localStorage.removeItem(STORAGE_KEYS.AUTH_USER)
-        setAuth({ user: null, token: null, isAuthenticated: false, isLoading: false })
+        localStorage.removeItem(STORAGE_KEYS.USER_ROLE)
+        setAuth({ user: null, token: null, isAuthenticated: false, isLoading: false, role: null })
       })
   }, [])
 
@@ -47,21 +63,29 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('auth:logout', handler)
   }, [])
 
-  const login = useCallback(async (email, password) => {
-    const { access_token } = await authApi.login({ email, password })
+  const login = useCallback(async (email, password, role = 'patient') => {
+    const { access_token } = await authApi.login({ email, password, role })
     localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, access_token)
+    localStorage.setItem(STORAGE_KEYS.USER_ROLE, role)
+
+    if (role !== 'patient') {
+      setAuth({ user: null, token: access_token, isAuthenticated: true, isLoading: false, role })
+      return
+    }
+
     const user = await patientApi.me()
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user))
-    setAuth({ user, token: access_token, isAuthenticated: true, isLoading: false })
+    setAuth({ user, token: access_token, isAuthenticated: true, isLoading: false, role })
   }, [])
 
-  const register = useCallback(
-    async ({ full_name, email, password }) => {
-      await authApi.register({ full_name, email, password })
-      await login(email, password)
-    },
-    [login],
-  )
+  const register = useCallback(async ({ full_name, phone, password, email, referral_code }) => {
+    const { access_token } = await authApi.register({ full_name, phone, password, email, referral_code })
+    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, access_token)
+    localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'patient')
+    const user = await patientApi.me()
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user))
+    setAuth({ user, token: access_token, isAuthenticated: true, isLoading: false, role: 'patient' })
+  }, [])
 
   return (
     <AuthContext.Provider value={{ ...auth, login, register, logout }}>

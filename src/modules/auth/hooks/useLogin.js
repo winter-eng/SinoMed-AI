@@ -18,12 +18,12 @@ export function useLogin() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const submitLogin = async ({ email, password }) => {
+  const submitLogin = async ({ email, password, role = 'patient' }) => {
     setLoading(true)
     setError(null)
     try {
-      await login(email, password)
-      navigate(ROUTES.DASHBOARD)
+      await login(email, password, role)
+      navigate(role === 'doctor' ? ROUTES.DOCTOR.CASES : ROUTES.DASHBOARD)
     } catch (err) {
       setError(parseApiError(err) ?? t('auth.loginError'))
     } finally {
@@ -31,11 +31,11 @@ export function useLogin() {
     }
   }
 
-  const submitRegister = async ({ full_name, email, password }) => {
+  const submitRegister = async ({ full_name, phone, password, email, referral_code }) => {
     setLoading(true)
     setError(null)
     try {
-      await register({ full_name, email, password })
+      await register({ full_name, phone, password, email, referral_code })
       navigate(ROUTES.DASHBOARD)
     } catch (err) {
       setError(parseApiError(err) ?? t('auth.registerError'))

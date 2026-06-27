@@ -17,10 +17,11 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Only dispatch logout for authenticated requests — skip auth endpoints
-    // (a 401 on /auth/patient/login means wrong credentials, not an expired session)
+    // Skip auth endpoints (wrong credentials) and requests that opt out of
+    // the global logout (e.g., the bootstrap token-validation call in AuthProvider).
     const isAuthEndpoint = error?.config?.url?.includes('/auth/')
-    if (error?.response?.status === 401 && !isAuthEndpoint) {
+    const skipLogout = error?.config?._skipLogout
+    if (error?.response?.status === 401 && !isAuthEndpoint && !skipLogout) {
       window.dispatchEvent(new Event('auth:logout'))
     }
     return Promise.reject(error)

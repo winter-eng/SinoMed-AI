@@ -1,21 +1,25 @@
 import { apiClient } from './client'
 
+const LOGIN_ENDPOINTS = {
+  patient: '/auth/patient/login',
+  assistant: '/auth/nurse/login',
+  doctor: '/auth/doctor/login',
+}
+
 export const authApi = {
-  login: ({ email, password }) =>
-    apiClient.post('/auth/patient/login', { email, password }).then((r) => r.data),
+  login: ({ email, password, role = 'patient' }) =>
+    apiClient
+      .post(LOGIN_ENDPOINTS[role] ?? LOGIN_ENDPOINTS.patient, { email, password })
+      .then((r) => r.data),
 
   register: (data) => {
     const payload = {
       full_name: data.full_name,
-      email: data.email,
+      phone: data.phone,
       password: data.password,
-      // TODO: collect these from UI — using placeholders until registration form is extended
-      phone: data.phone ?? '+998901234567',
-      date_of_birth: data.date_of_birth ?? '2005-01-01',
-      clinic_id: data.clinic_id ?? 1,
-      latitude: data.latitude ?? 41.3111,
-      longitude: data.longitude ?? 69.2797,
     }
+    if (data.email) payload.email = data.email
+    if (data.referral_code) payload.referral_code = data.referral_code
     return apiClient.post('/auth/patient/register', payload).then((r) => r.data)
   },
 }
