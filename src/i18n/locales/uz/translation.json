@@ -22,6 +22,7 @@
     "dashboard": "Bosh sahifa",
     "screening": "Skrining",
     "history": "Tarix",
+    "chat": "AI Chat",
     "support": "Yordam",
     "clinics": "Klinikalar",
     "settings": "Sozlamalar",
@@ -211,9 +212,14 @@
   "profile": {
     "title": "Profil",
     "editProfile": "Profilni tahrirlash",
+    "editTitle": "Profilni tahrirlash",
     "accountInfo": "Hisob ma'lumotlari",
     "name": "Ism",
+    "fullName": "To'liq ism",
+    "username": "Foydalanuvchi nomi",
     "email": "Email",
+    "phone": "Telefon",
+    "dob": "Tug'ilgan sana",
     "accountType": "Hisob turi",
     "accountTypeValue": "Shaxsiy hisob",
     "myScreenings": "Mening skrininglerim",
@@ -224,7 +230,11 @@
     "screenings": "skrining",
     "lastScreening": "Oxirgi skrining",
     "healthProfile": "Tibbiy karta",
-    "viewHealthProfile": "Shaxsiy tibbiy ma'lumotlar"
+    "viewHealthProfile": "Shaxsiy tibbiy ma'lumotlar",
+    "saved": "Profil muvaffaqiyatli saqlandi",
+    "saveError": "Saqlashda xato yuz berdi",
+    "fieldRequired": "Bu maydon to'ldirilishi shart",
+    "emailInvalid": "To'g'ri email manzil kiriting"
   },
   "clinics": {
     "title": "Yaqin klinikalar",
@@ -328,9 +338,21 @@
         "label": "Qo'shimcha savollar",
         "info": "Javoblaringiz asosida AI aniq xavfni hisoblash uchun qo'shimcha savollar shakllantirdi.",
         "familyMember": "Qarindoshlaringizdan aynan kim diabetga chalingan?",
-        "familyOpts": ["Ota", "Ona", "Aka-uka / opa-singil", "Buvi / bobo", "Boshqa qarindosh"],
+        "familyOpts": [
+          "Ota",
+          "Ona",
+          "Aka-uka / opa-singil",
+          "Buvi / bobo",
+          "Boshqa qarindosh"
+        ],
         "visionCheck": "Ophthalmolog ko'rigidan oxirgi marta qachon o'tdingiz?",
-        "visionOpts": ["6 oydan kamroq oldin", "6–12 oy oldin", "1–2 yil oldin", "2 yildan ortiq oldin", "Hech qachon"],
+        "visionOpts": [
+          "6 oydan kamroq oldin",
+          "6–12 oy oldin",
+          "1–2 yil oldin",
+          "2 yildan ortiq oldin",
+          "Hech qachon"
+        ],
         "weightAttempts": "So'nggi 12 oyda vaznni kamaytirmoqchi bo'lganmisiz?",
         "weightYes": "Ha, maqsadli ravishda kamaytirganman",
         "weightNo": "Yo'q, urinmadim"
@@ -415,6 +437,9 @@
       "4": "Juda yuqori xavf"
     },
     "disclaimer": "Bu natijalar tibbiy tashxis emas. Shifokoringizga murojaat qiling.",
+    "photo": "Yuklangan tasvir",
+    "date": "Tahlil sanasi",
+    "probabilities": "Darajalar bo'yicha ehtimollik",
     "shareResult": "Natijani ulashish",
     "downloadPdf": "PDF yuklash",
     "rec0a": "Yillik ko'z tekshiruvi tavsiya etiladi",
@@ -432,6 +457,20 @@
     "rec4a": "Darhol ko'z shifokori yoki klinikaga boring",
     "rec4b": "Shoshilinch tibbiy yordam zarur bo'lishi mumkin",
     "rec4c": "Kechiktirmasdan mutaxassisga murojaat qiling"
+  },
+  "chat": {
+    "title": "AI Diagnostika",
+    "subtitle": "Belgilaringiz haqida AI bilan suhbatlashing",
+    "placeholder": "Xabar yozing...",
+    "send": "Yuborish",
+    "finalize": "Yakunlash",
+    "finalizeConfirm": "Suhbatni yakunlashni xohlaysizmi?",
+    "finalized": "Suhbat yakunlandi",
+    "empty": "Hali xabar yo'q",
+    "emptyHint": "Birinchi savolingizni yuboring, AI sizga yordam beradi",
+    "sendError": "Xabar yuborishda xato yuz berdi",
+    "loadError": "Suhbat tarixini yuklab bo'lmadi",
+    "enterHint": "Enter — yuborish · Shift+Enter — yangi qator"
   },
   "healthProfile": {
     "title": "Tibbiy karta",
@@ -480,7 +519,12 @@
       "subtitle": "Bemorlar bilan muloqot.",
       "inputPlaceholder": "Xabar yozing...",
       "send": "Yuborish",
-      "backToList": "Orqaga"
+      "backToList": "Orqaga",
+      "noMessages": "Hali xabar yo'q",
+      "uploadImage": "Rasm yuborish",
+      "uploading": "Yuklanmoqda...",
+      "imageLoadError": "[Rasm yuklanmadi]",
+      "uploadError": "Rasm yuborishda xato yuz berdi"
     },
     "history": {
       "title": "Bemor Tarixi",
@@ -494,7 +538,13 @@
       "email": "Email",
       "dob": "Tug'ilgan sana",
       "joinedDate": "Ro'yxatdan o'tgan sana",
-      "totalPatients": "Jami bemorlar"
+      "totalPatients": "Jami bemorlar",
+      "sectionPersonal": "Shaxsiy ma'lumotlar",
+      "sectionContact": "Aloqa",
+      "sectionAccount": "Hisob",
+      "sectionMedical": "Tibbiy ma'lumotlar",
+      "sectionAdditional": "Boshqa",
+      "partialData": "To'liq ma'lumotlar mavjud emas. Qisman ko'rsatilmoqda."
     },
     "cases": {
       "title": "Faol Holatlar",
@@ -509,7 +559,21 @@
       "noAnketas": "Hali anketa yo'q",
       "noAnketasDesc": "Yangi anketalar bu yerda ko'rinadi.",
       "caseDetail": "Holat tafsilotlari",
-      "createdAt": "Yaratilgan"
+      "createdAt": "Yaratilgan",
+      "anketaFallback": "Anketa #{{id}}",
+      "sectionAI": "AI Tahlili",
+      "sectionPatient": "Bemor",
+      "sectionQuestionnaire": "Anketa javoblari",
+      "sectionImage": "Retinal tasvir",
+      "sectionMeta": "Holat ma'lumotlari",
+      "sectionAdditional": "Boshqa",
+      "riskGrade": "Xavf darajasi",
+      "confidence": "Aniqlik",
+      "prediction": "Bashorat",
+      "diagnosisDesc": "Tashxis tavsifi",
+      "referralSource": "Yo'llanma manbai",
+      "clinic": "Klinika",
+      "updatedAt": "Yangilangan"
     },
     "settings": {
       "title": "Sozlamalar",
@@ -542,7 +606,9 @@
       "logout": "Chiqish",
       "clinicId": "Klinika ID",
       "username": "Foydalanuvchi nomi",
-      "joinedDate": "Ro'yxatdan o'tgan sana"
+      "joinedDate": "Ro'yxatdan o'tgan sana",
+      "sectionProfessional": "Professional ma'lumotlar",
+      "sectionContact": "Aloqa ma'lumotlari"
     }
   },
   "assistant": {
@@ -560,13 +626,19 @@
       "daysLeft": "kun qoldi",
       "reward": "Sovrin",
       "inviteNeeded": "ta taklif kerak",
-      "yourProgress": "Sizning natijangiz"
+      "yourProgress": "Sizning natijangiz",
+      "empty": "Hozircha faol tadbir yo'q",
+      "emptyHint": "Yangi kampaniyalar bu yerda ko'rinadi"
     },
     "leaderboard": {
       "title": "Reyting",
       "subtitle": "Eng yaxshi assistent bo'ling",
       "referrals": "referal",
-      "you": "Siz"
+      "you": "Siz",
+      "yourScore": "Sizning natijangiz",
+      "notAvailable": "Reyting hali mavjud emas",
+      "notAvailableDesc": "Reyting funksiyasi tez orada qo'shiladi",
+      "loadError": "Ma'lumotlarni yuklab bo'lmadi"
     },
     "referral": {
       "title": "Referal",
@@ -607,7 +679,34 @@
       "badges": "Nishonlar",
       "achievements": "Yutuqlar",
       "editProfile": "Profilni tahrirlash",
-      "logout": "Chiqish"
+      "logout": "Chiqish",
+      "stats": "Statistika",
+      "phone": "Telefon",
+      "email": "Email",
+      "achievement1Label": "Birinchi referal",
+      "achievement1Desc": "Birinchi taklifingizni yubordingiz",
+      "achievement2Label": "10 ta ro'yxatdan o'tish",
+      "achievement2Desc": "10 ta muvaffaqiyatli ro'yxatdan o'tishga erishdingiz",
+      "achievement3Label": "100 ta referal",
+      "achievement3Desc": "100 ta referalga erishing"
     }
+  },
+  "patientDoctorChat": {
+    "title": "Shifokor bilan chat",
+    "subtitle": "Shifokordan kelgan xabarlar",
+    "doctorLabel": "Shifokor",
+    "empty": "Hali xabar yo'q",
+    "emptyHint": "Shifokoringiz xabar yuborgan taqdirda bu yerda ko'rinadi",
+    "loadError": "Xabarlarni yuklab bo'lmadi",
+    "retry": "Qayta urinish",
+    "readOnly": "Shifokor xabar yuborishi kutilmoqda",
+    "imageError": "[Rasm yuklanmadi]",
+    "noDoctorId": "Shifokor tayinlanmagan",
+    "noDoctorIdDesc": "Shifokor ID sini backend bermoqda emas. GET /dp-chat/history?doctor_id= so'rovini yuborish imkoni yo'q. Backend sozlanmalarini tekshiring."
+  },
+  "notFound": {
+    "title": "Sahifa topilmadi",
+    "desc": "Bu sahifa mavjud emas yoki boshqa manzilga ko'chirilgan.",
+    "back": "Bosh sahifaga qaytish"
   }
 }

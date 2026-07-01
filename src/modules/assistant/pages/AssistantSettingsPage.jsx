@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Shield, Key, Eye, LogOut, Sun, Moon } from 'lucide-react'
+import { Bell, Shield, Eye, LogOut, Sun, Moon } from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { useAuth } from '@/app/providers/AuthProvider'
@@ -45,6 +45,11 @@ function SettingRow({ icon: Icon, title, description, children }) {
   )
 }
 
+function loadSetting(key, def) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? def } catch { return def }
+}
+function saveSetting(key, val) { localStorage.setItem(key, JSON.stringify(val)) }
+
 export function AssistantSettingsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -52,11 +57,17 @@ export function AssistantSettingsPage() {
   const { theme, setTheme } = useTheme()
   const { language, setLanguage } = useLanguage()
 
-  const [notifReg, setNotifReg] = useState(true)
-  const [notifLeader, setNotifLeader] = useState(true)
-  const [notifEvents, setNotifEvents] = useState(true)
-  const [twoFactor, setTwoFactor] = useState(false)
-  const [dataUsage, setDataUsage] = useState(true)
+  const [notifReg, setNotifRegRaw] = useState(() => loadSetting('as.notifReg', true))
+  const [notifLeader, setNotifLeaderRaw] = useState(() => loadSetting('as.notifLeader', true))
+  const [notifEvents, setNotifEventsRaw] = useState(() => loadSetting('as.notifEvents', true))
+  const [twoFactor, setTwoFactorRaw] = useState(() => loadSetting('as.twoFactor', false))
+  const [dataUsage, setDataUsageRaw] = useState(() => loadSetting('as.dataUsage', true))
+
+  const setNotifReg = (v) => { setNotifRegRaw(v); saveSetting('as.notifReg', v) }
+  const setNotifLeader = (v) => { setNotifLeaderRaw(v); saveSetting('as.notifLeader', v) }
+  const setNotifEvents = (v) => { setNotifEventsRaw(v); saveSetting('as.notifEvents', v) }
+  const setTwoFactor = (v) => { setTwoFactorRaw(v); saveSetting('as.twoFactor', v) }
+  const setDataUsage = (v) => { setDataUsageRaw(v); saveSetting('as.dataUsage', v) }
 
   const handleLogout = () => {
     logout()
@@ -131,9 +142,6 @@ export function AssistantSettingsPage() {
         <Card variant="default" padding="lg">
           <h2 className="mb-1 text-sm font-semibold text-foreground">{t('assistant.settings.security')}</h2>
           <div className="mt-3">
-            <SettingRow icon={Key} title={t('assistant.settings.changePassword')}>
-              <button className="text-xs font-medium text-primary hover:underline">{t('common.edit')}</button>
-            </SettingRow>
             <SettingRow icon={Shield} title={t('assistant.settings.twoFactor')} description={twoFactor ? t('assistant.settings.twoFactorEnabled') : t('assistant.settings.twoFactorDisabled')}>
               <Toggle checked={twoFactor} onChange={setTwoFactor} />
             </SettingRow>

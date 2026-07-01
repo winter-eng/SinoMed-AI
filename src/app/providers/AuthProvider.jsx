@@ -41,14 +41,6 @@ export function AuthProvider({ children }) {
       return
     }
 
-    // DEV: skip API validation for preview tokens so session survives page refresh
-    if (import.meta.env.DEV && token.startsWith('dev-token')) {
-      const savedUser = localStorage.getItem(STORAGE_KEYS.AUTH_USER)
-      const user = savedUser ? JSON.parse(savedUser) : null
-      setAuth({ user, token, isAuthenticated: true, isLoading: false, role: 'patient' })
-      return
-    }
-
     patientApi
       .me({ _skipLogout: true })
       .then((user) => {
@@ -116,37 +108,14 @@ export function AuthProvider({ children }) {
     setAuth({ user, token: access_token, isAuthenticated: true, isLoading: false, role: 'patient' })
   }, [])
 
-  // Development-only previews — tree-shaken in production by Vite
-  const devPreviewDoctor = useCallback(() => {
-    if (!import.meta.env.DEV) return
-    const devUser = { id: 'dev-doctor', full_name: 'Demo Doctor', specialization: 'Cardiologist' }
-    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'dev-token')
-    localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'doctor')
-    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(devUser))
-    setAuth({ user: devUser, token: 'dev-token', isAuthenticated: true, isLoading: false, role: 'doctor' })
-  }, [])
-
-  const devPreviewAssistant = useCallback(() => {
-    if (!import.meta.env.DEV) return
-    const devUser = { id: 'dev-assistant', full_name: 'Demo Assistant', referral_code: 'SINOMED-X82K91' }
-    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'dev-token-assistant')
-    localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'assistant')
-    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(devUser))
-    setAuth({ user: devUser, token: 'dev-token-assistant', isAuthenticated: true, isLoading: false, role: 'assistant' })
-  }, [])
-
-  const devPreviewPatient = useCallback(() => {
-    if (!import.meta.env.DEV) return
-    const devUser = { id: 'dev-patient', full_name: 'Demo Patient', email: 'demo@sinomed.ai' }
-    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'dev-token-patient')
-    localStorage.setItem(STORAGE_KEYS.USER_ROLE, 'patient')
-    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(devUser))
-    setAuth({ user: devUser, token: 'dev-token-patient', isAuthenticated: true, isLoading: false, role: 'patient' })
+  const updateUser = useCallback((userData) => {
+    setAuth((prev) => ({ ...prev, user: userData }))
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(userData))
   }, [])
 
   return (
     <AuthContext.Provider
-      value={{ ...auth, login, register, logout, devPreviewDoctor, devPreviewAssistant, devPreviewPatient }}
+      value={{ ...auth, login, register, logout, updateUser }}
     >
       {children}
     </AuthContext.Provider>

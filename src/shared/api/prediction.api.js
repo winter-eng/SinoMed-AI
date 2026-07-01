@@ -8,5 +8,4 @@ export const predictionApi = {
   },
   list: (params) => apiClient.get('/predictions/me', { params }).then((r) => r.data),
   detail: (id) => apiClient.get(`/predictions/me/${id}`).then((r) => r.data),
-  grades: () => apiClient.get('/grades').then((r) => r.data),
 }

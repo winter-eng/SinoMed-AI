@@ -1,56 +1,14 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { Calendar, Users, X, Phone, Mail, User, Activity, FileText } from 'lucide-react'
+import {
+  Calendar, Users, X, Phone, Mail, User, Hash,
+  RefreshCw, Heart, ChevronRight, AlertTriangle,
+} from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
+import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/utils'
 import { doctorApi } from '@/shared/api/doctor.api'
-
-const MOCK_PATIENTS = [
-  {
-    id: 1, full_name: 'Aziz Karimov', phone: '+998 90 123 45 67', email: 'aziz@mail.uz',
-    date_of_birth: '1985-03-14', created_at: '2024-11-10T08:20:00Z',
-    status: 'active', complaint: "Ko'rish keskin pasayib ketgan, ko'z oldida qora dog'lar paydo bo'lgan",
-    diagnosis: 'Diabetik retinopatiya — Grade 3', last_visit: '2025-06-18T10:00:00Z',
-  },
-  {
-    id: 2, full_name: 'Malika Toshmatova', phone: '+998 91 234 56 78', email: null,
-    date_of_birth: '1992-07-22', created_at: '2024-12-01T10:15:00Z',
-    status: 'observation', complaint: 'Bosh og\'rig\'i va ko\'z toliqishi, kompyuter oldida ko\'p o\'tiradi',
-    diagnosis: 'Gipertoniya bilan bog\'liq ko\'z o\'zgarishlari — Grade 1', last_visit: '2025-06-20T14:30:00Z',
-  },
-  {
-    id: 3, full_name: 'Jahon Nazarov', phone: '+998 93 345 67 89', email: 'jahon@gmail.com',
-    date_of_birth: '1978-11-05', created_at: '2025-01-18T14:30:00Z',
-    status: 'critical', complaint: "Ko'rish deyarli yo'qolgan, nur sezgisi qolgan xolos, urgently murojaat qildi",
-    diagnosis: 'Proliferativ diabetik retinopatiya — Grade 4', last_visit: '2025-06-25T09:00:00Z',
-  },
-  {
-    id: 4, full_name: 'Dilnoza Umarova', phone: '+998 94 456 78 90', email: null,
-    date_of_birth: '1995-02-28', created_at: '2025-02-05T09:00:00Z',
-    status: 'stable', complaint: "Profilaktik ko'rik, hech qanday shikoyat yo'q",
-    diagnosis: 'Patologiya aniqlanmadi — Grade 0', last_visit: '2025-06-15T11:00:00Z',
-  },
-  {
-    id: 5, full_name: 'Sardor Rashidov', phone: '+998 97 567 89 01', email: 'sardor@inbox.uz',
-    date_of_birth: '1988-09-17', created_at: '2025-03-12T11:45:00Z',
-    status: 'active', complaint: "Kechqurun ko'rish yomonlashadi, chaqnashlar ko'radi",
-    diagnosis: "O'rtacha nonproliferativ DR — Grade 2", last_visit: '2025-06-22T16:00:00Z',
-  },
-  {
-    id: 6, full_name: 'Nilufar Xasanova', phone: '+998 90 678 90 12', email: null,
-    date_of_birth: '2001-06-03', created_at: '2025-04-20T16:10:00Z',
-    status: 'stable', complaint: "Ko'z quruqligi, yonish hissi, kontakt linza ishlatadi",
-    diagnosis: 'Engil o\'zgarishlar — Grade 1', last_visit: '2025-06-10T13:00:00Z',
-  },
-]
-
-const STATUS_LABELS = {
-  active: { label: 'Faol', color: 'text-blue-600 bg-blue-500/10' },
-  observation: { label: 'Kuzatuv', color: 'text-amber-600 bg-amber-500/10' },
-  critical: { label: 'Kritik', color: 'text-red-600 bg-red-500/10' },
-  stable: { label: 'Barqaror', color: 'text-green-600 bg-green-500/10' },
-}
 
 function initials(name) {
   if (!name) return '?'
@@ -66,64 +24,199 @@ function formatDate(iso) {
   }
 }
 
-function DetailRow({ icon: Icon, label, value }) {
-  if (!value) return null
+function formatValue(val, t) {
+  if (val === null || val === undefined) return '—'
+  if (typeof val === 'boolean') return val ? t('common.yes') : t('common.no')
+  if (typeof val === 'object') return JSON.stringify(val)
+  return String(val)
+}
+
+function SectionHeader({ icon: Icon, title }) {
   return (
-    <div className="flex items-start gap-3 border-b border-border/40 py-3 last:border-0">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <Icon className="h-4 w-4 text-muted-foreground" />
+    <div className="mb-2.5 flex items-center gap-2">
+      <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10">
+        <Icon className="h-3 w-3 text-primary" />
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] text-muted-foreground">{label}</p>
-        <p className="mt-0.5 break-all text-sm font-medium text-foreground">{value}</p>
-      </div>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
     </div>
   )
 }
 
+function DataRow({ label, value }) {
+  if (value === null || value === undefined || value === '') return null
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-border/30 py-2.5 last:border-0">
+      <p className="shrink-0 text-[11px] leading-5 text-muted-foreground">{label}</p>
+      <p className="max-w-[62%] break-words text-right text-sm font-medium text-foreground">{String(value)}</p>
+    </div>
+  )
+}
+
+// ── Field categorisation ──────────────────────────────────────────────────────
+const PERSONAL_KEYS = new Set(['full_name', 'date_of_birth', 'age', 'gender'])
+const CONTACT_KEYS = new Set(['phone', 'email'])
+const ACCOUNT_KEYS = new Set(['id', 'username', 'clinic_id', 'referral_code', 'created_at'])
+const MEDICAL_KEYS = new Set(['blood_type', 'allergies', 'chronic_diseases', 'height', 'weight', 'bmi'])
+const ALL_KNOWN = new Set([...PERSONAL_KEYS, ...CONTACT_KEYS, ...ACCOUNT_KEYS, ...MEDICAL_KEYS])
+
+function fieldLabel(key, t) {
+  const map = {
+    full_name: t('profile.name'),
+    date_of_birth: t('profile.dob'),
+    age: t('screening.step4.rowAge'),
+    gender: t('screening.step4.rowGender'),
+    phone: t('profile.phone'),
+    email: t('profile.email'),
+    username: t('auth.username'),
+    clinic_id: t('doctor.profile.clinicId'),
+    referral_code: t('auth.referralCode'),
+    created_at: t('doctor.history.joinedDate'),
+    blood_type: t('healthProfile.bloodType'),
+    allergies: t('healthProfile.allergies'),
+    chronic_diseases: t('healthProfile.chronicDiseases'),
+    height: t('screening.step4.rowHeight'),
+    weight: t('screening.step4.rowWeight'),
+    bmi: t('screening.step4.rowBmi'),
+  }
+  return map[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+// ── Patient detail sections ───────────────────────────────────────────────────
+function PatientDetailContent({ item, t, partialOnly }) {
+  const personalEntries = Object.entries(item).filter(([k, v]) => PERSONAL_KEYS.has(k) && v !== null && v !== undefined)
+  const contactEntries = Object.entries(item).filter(([k, v]) => CONTACT_KEYS.has(k) && v !== null && v !== undefined)
+  const accountEntries = Object.entries(item).filter(([k, v]) => ACCOUNT_KEYS.has(k) && v !== null && v !== undefined)
+  const medicalEntries = Object.entries(item).filter(([k, v]) => MEDICAL_KEYS.has(k) && v !== null && v !== undefined)
+  const extraEntries = Object.entries(item).filter(([k, v]) => !ALL_KNOWN.has(k) && v !== null && v !== undefined)
+
+  return (
+    <div className="space-y-5">
+      {partialOnly && (
+        <div className="flex items-start gap-2 rounded-xl bg-amber-500/10 px-3 py-2.5 text-xs text-amber-700">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          {t('doctor.history.partialData')}
+        </div>
+      )}
+
+      {personalEntries.length > 0 && (
+        <div>
+          <SectionHeader icon={User} title={t('doctor.history.sectionPersonal')} />
+          <div className="rounded-xl border border-border bg-muted/30 px-3 pb-1 pt-1">
+            {personalEntries.map(([k, v]) => (
+              <DataRow
+                key={k}
+                label={fieldLabel(k, t)}
+                value={k === 'date_of_birth' ? (formatDate(v) ?? formatValue(v, t)) : formatValue(v, t)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {contactEntries.length > 0 && (
+        <div>
+          <SectionHeader icon={Phone} title={t('doctor.history.sectionContact')} />
+          <div className="rounded-xl border border-border bg-muted/30 px-3 pb-1 pt-1">
+            {contactEntries.map(([k, v]) => (
+              <DataRow key={k} label={fieldLabel(k, t)} value={formatValue(v, t)} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {accountEntries.length > 0 && (
+        <div>
+          <SectionHeader icon={Hash} title={t('doctor.history.sectionAccount')} />
+          <div className="rounded-xl border border-border bg-muted/30 px-3 pb-1 pt-1">
+            {accountEntries.map(([k, v]) => (
+              <DataRow
+                key={k}
+                label={fieldLabel(k, t)}
+                value={k === 'created_at' ? (formatDate(v) ?? formatValue(v, t)) : formatValue(v, t)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {medicalEntries.length > 0 && (
+        <div>
+          <SectionHeader icon={Heart} title={t('doctor.history.sectionMedical')} />
+          <div className="rounded-xl border border-border bg-muted/30 px-3 pb-1 pt-1">
+            {medicalEntries.map(([k, v]) => (
+              <DataRow key={k} label={fieldLabel(k, t)} value={formatValue(v, t)} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {extraEntries.length > 0 && (
+        <div>
+          <SectionHeader icon={ChevronRight} title={t('doctor.history.sectionAdditional')} />
+          <div className="rounded-xl border border-border bg-muted/30 px-3 pb-1 pt-1">
+            {extraEntries.map(([k, v]) => (
+              <DataRow
+                key={k}
+                label={k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                value={
+                  typeof v === 'object' && v !== null
+                    ? Array.isArray(v)
+                      ? v.join(', ')
+                      : JSON.stringify(v)
+                    : formatValue(v, t)
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 export function PatientHistoryPage() {
   const { t } = useTranslation()
   const [patients, setPatients] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [retryKey, setRetryKey] = useState(0)
   const [selected, setSelected] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
+  const [detailPartial, setDetailPartial] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
+    setError(null)
     doctorApi
       .patients()
-      .then((data) => {
-        const list = Array.isArray(data) ? data : []
-        setPatients(list.length > 0 ? list : MOCK_PATIENTS)
-      })
-      .catch(() => setPatients(MOCK_PATIENTS))
+      .then((data) => setPatients(Array.isArray(data) ? data : []))
+      .catch(() => setError(t('common.error')))
       .finally(() => setLoading(false))
-  }, [t])
+  }, [t, retryKey])
 
   const openDetail = async (patient) => {
     setSelected(patient)
+    setDetailPartial(false)
     setDetailLoading(true)
     try {
       const detail = await doctorApi.patientDetail(patient.id)
       setSelected(detail)
     } catch {
-      // keep summary data
+      setDetailPartial(true)
     } finally {
       setDetailLoading(false)
     }
   }
 
   return (
-    <div className="relative space-y-4 max-w-2xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-      >
+    <div className="relative max-w-2xl mx-auto space-y-4">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
         <h1 className="text-xl font-semibold text-foreground">{t('doctor.history.title')}</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">{t('doctor.history.subtitle')}</p>
       </motion.div>
 
+      {/* Patient count chip */}
       {!loading && !error && patients.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -138,18 +231,29 @@ export function PatientHistoryPage() {
         </motion.div>
       )}
 
+      {/* Loading skeleton */}
       {loading && (
         <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-xl bg-muted" />
-          ))}
+          {[1, 2, 3].map((i) => <div key={i} className="h-20 animate-pulse rounded-xl bg-muted" />)}
         </div>
       )}
 
+      {/* Error + retry */}
       {error && (
-        <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+          <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+            onClick={() => setRetryKey((k) => k + 1)}
+          >
+            {t('common.retry')}
+          </Button>
+        </motion.div>
       )}
 
+      {/* Empty state */}
       {!loading && !error && patients.length === 0 && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -162,6 +266,7 @@ export function PatientHistoryPage() {
         </motion.div>
       )}
 
+      {/* Patient list */}
       <div className="space-y-3">
         {patients.map((p, i) => (
           <motion.div
@@ -181,24 +286,38 @@ export function PatientHistoryPage() {
                   {initials(p.full_name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-foreground">{p.full_name || '—'}</p>
-                    {p.status && STATUS_LABELS[p.status] && (
-                      <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium', STATUS_LABELS[p.status].color)}>
-                        {STATUS_LABELS[p.status].label}
-                      </span>
-                    )}
-                  </div>
-                  {p.complaint && (
-                    <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{p.complaint}</p>
+                  <p className="text-sm font-semibold text-foreground">{p.full_name || '—'}</p>
+                  {/* Phone / email row */}
+                  {(p.phone || p.email) && (
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0">
+                      {p.phone && (
+                        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <Phone className="h-3 w-3 shrink-0" />
+                          {p.phone}
+                        </span>
+                      )}
+                      {p.email && (
+                        <span className="flex max-w-[140px] items-center gap-1 truncate text-[11px] text-muted-foreground">
+                          <Mail className="h-3 w-3 shrink-0" />
+                          {p.email}
+                        </span>
+                      )}
+                    </div>
                   )}
-                  {p.phone && !p.complaint && (
-                    <p className="mt-0.5 text-xs text-muted-foreground">{p.phone}</p>
-                  )}
-                  {p.last_visit && (
-                    <div className="mt-1 flex items-center gap-1.5">
-                      <Calendar className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-[11px] text-muted-foreground">Oxirgi: {formatDate(p.last_visit)}</span>
+                  {/* DOB / joined row */}
+                  {(p.date_of_birth || p.created_at) && (
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0">
+                      {p.date_of_birth && (
+                        <span className="text-[11px] text-muted-foreground">
+                          {t('profile.dob')}: {formatDate(p.date_of_birth)}
+                        </span>
+                      )}
+                      {p.created_at && (
+                        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <Calendar className="h-3 w-3 shrink-0" />
+                          {formatDate(p.created_at)}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -208,7 +327,7 @@ export function PatientHistoryPage() {
         ))}
       </div>
 
-      {/* Detail panel */}
+      {/* Detail bottom sheet */}
       <AnimatePresence>
         {selected && (
           <>
@@ -220,17 +339,21 @@ export function PatientHistoryPage() {
               onClick={() => setSelected(null)}
             />
             <motion.div
-              className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl border-t border-border bg-background p-5 shadow-2xl"
+              className="fixed inset-x-0 bottom-0 z-50 max-h-[86vh] overflow-y-auto rounded-t-2xl border-t border-border bg-background p-5 shadow-2xl"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 340, damping: 32 }}
             >
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-base font-semibold text-foreground">{t('doctor.history.patientDetail')}</p>
+              {/* Sheet header */}
+              <div className="mb-5 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-base font-semibold text-foreground">{t('doctor.history.patientDetail')}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{selected.full_name || '—'}</p>
+                </div>
                 <button
                   onClick={() => setSelected(null)}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -238,22 +361,10 @@ export function PatientHistoryPage() {
 
               {detailLoading ? (
                 <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-12 animate-pulse rounded-xl bg-muted" />
-                  ))}
+                  {[1, 2, 3, 4].map((i) => <div key={i} className="h-10 animate-pulse rounded-xl bg-muted" />)}
                 </div>
               ) : (
-                <div>
-                  <DetailRow icon={User} label="Ism Familiya" value={selected.full_name} />
-                  <DetailRow icon={Activity} label="Holati" value={selected.status ? STATUS_LABELS[selected.status]?.label : null} />
-                  <DetailRow icon={FileText} label="Shikoyat" value={selected.complaint} />
-                  <DetailRow icon={FileText} label="Tashxis" value={selected.diagnosis} />
-                  <DetailRow icon={Phone} label={t('doctor.history.phone')} value={selected.phone} />
-                  <DetailRow icon={Mail} label={t('doctor.history.email')} value={selected.email} />
-                  <DetailRow icon={Calendar} label={t('doctor.history.dob')} value={formatDate(selected.date_of_birth)} />
-                  <DetailRow icon={Calendar} label="Oxirgi tashrif" value={formatDate(selected.last_visit)} />
-                  <DetailRow icon={Calendar} label={t('doctor.history.joinedDate')} value={formatDate(selected.created_at)} />
-                </div>
+                <PatientDetailContent item={selected} t={t} partialOnly={detailPartial} />
               )}
             </motion.div>
           </>

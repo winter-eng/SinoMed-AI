@@ -11,7 +11,9 @@
       "Read(//tmp/**)",
       "WebFetch(domain:aidiagnostikapi.sangilov.uz)",
       "Bash(npx eslint *)",
-      "Bash(xargs grep -l \"doctor\")"
+      "Bash(xargs grep -l \"doctor\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(Object.keys\\(p.dependencies\\), null, 2\\)\\)\")",
+      "Bash(python -c ' *)"
     ]
   }
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, LogOut, Copy, Trophy, Users, Calendar, BadgeCheck, Star, Zap, Award, Phone, Mail, AtSign } from 'lucide-react'
+import { LogOut, Copy, Users, Calendar, BadgeCheck, Phone, Mail, AtSign } from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { Logo } from '@/shared/components/ui/Logo'
@@ -41,33 +41,28 @@ function InfoRow({ icon: Icon, label, value, mono }) {
   )
 }
 
-const BADGES = [
-  { icon: Star, label: 'Early Bird', color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  { icon: Zap, label: 'Top 10', color: 'text-violet-500', bg: 'bg-violet-500/10' },
-  { icon: Award, label: '50 Referrals', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-]
-
 export function AssistantProfilePage() {
   const { t } = useTranslation()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [codeCopied, setCodeCopied] = useState(false)
   const [referrals, setReferrals] = useState([])
+  const [referralError, setReferralError] = useState(null)
 
   const displayName = user?.full_name || '—'
-  const referralCode = user?.referral_code || '—'
+  const referralCode = user?.referral_code || null
 
   useEffect(() => {
     nurseApi
       .referrals()
       .then((data) => setReferrals(Array.isArray(data) ? data : []))
-      .catch(() => {})
-  }, [])
+      .catch(() => setReferralError(t('common.error')))
+  }, [t])
 
   const totalReferrals = referrals.length
 
   const handleCopy = () => {
-    if (referralCode === '—') return
+    if (!referralCode) return
     navigator.clipboard.writeText(referralCode).catch(() => {})
     setCodeCopied(true)
     setTimeout(() => setCodeCopied(false), 2000)
@@ -78,14 +73,47 @@ export function AssistantProfilePage() {
     navigate(ROUTES.AUTH.LOGIN)
   }
 
+  const achievements = [
+    {
+      key: 'first',
+      label: t('assistant.profile.achievement1Label'),
+      desc: t('assistant.profile.achievement1Desc'),
+      done: totalReferrals >= 1,
+      pct: Math.min(100, totalReferrals * 100),
+    },
+    {
+      key: 'ten',
+      label: t('assistant.profile.achievement2Label'),
+      desc: t('assistant.profile.achievement2Desc'),
+      done: totalReferrals >= 10,
+      pct: Math.min(100, totalReferrals * 10),
+    },
+    {
+      key: 'hundred',
+      label: t('assistant.profile.achievement3Label'),
+      desc: t('assistant.profile.achievement3Desc'),
+      done: totalReferrals >= 100,
+      pct: Math.min(100, totalReferrals),
+    },
+  ]
+
   return (
     <div className="max-w-lg mx-auto space-y-5">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex justify-center pt-1">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="flex justify-center pt-1"
+      >
         <Logo size="md" showText />
       </motion.div>
 
-      {/* Hero */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06, duration: 0.35 }}>
+      {/* Hero — no edit button (no PATCH endpoint for nurses) */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.06, duration: 0.35 }}
+      >
         <Card variant="default" padding="lg">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-xl font-bold">
@@ -98,85 +126,89 @@ export function AssistantProfilePage() {
                 {t('assistant.role')}
               </span>
             </div>
-            <button
-              aria-label={t('assistant.profile.editProfile')}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            >
-              <Edit2 className="h-3.5 w-3.5" />
-            </button>
           </div>
         </Card>
       </motion.div>
 
       {/* Referral code */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.35 }}
+      >
         <Card variant="default" padding="lg">
           <p className="text-xs text-muted-foreground mb-2">{t('assistant.profile.referralCode')}</p>
           <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
-            <span className="font-mono font-bold tracking-widest text-foreground text-sm">{referralCode}</span>
+            <span className="font-mono font-bold tracking-widest text-foreground text-sm">
+              {referralCode ?? '—'}
+            </span>
             <button
               onClick={handleCopy}
-              className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ml-2',
-                codeCopied ? 'bg-green-500/10 text-green-600' : 'bg-background text-muted-foreground hover:text-foreground')}
+              disabled={!referralCode}
+              className={cn(
+                'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ml-2 disabled:opacity-40',
+                codeCopied ? 'bg-green-500/10 text-green-600' : 'bg-background text-muted-foreground hover:text-foreground',
+              )}
             >
               <Copy className="h-3.5 w-3.5" />
             </button>
           </div>
           {codeCopied && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-center text-green-600 font-medium">
-              Copied!
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-1.5 text-xs text-center text-green-600 font-medium"
+            >
+              {t('assistant.referral.copied')}
             </motion.p>
           )}
         </Card>
       </motion.div>
 
-      {/* Stats */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14, duration: 0.35 }}>
+      {/* Stats (real API data) */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.14, duration: 0.35 }}
+      >
         <Card variant="default" padding="lg">
-          <h2 className="mb-1 text-sm font-semibold text-foreground">Stats</h2>
+          <h2 className="mb-1 text-sm font-semibold text-foreground">{t('assistant.profile.stats')}</h2>
+          {referralError && (
+            <p className="mt-2 rounded-lg bg-destructive/8 px-3 py-2 text-xs text-destructive">{referralError}</p>
+          )}
           <div className="mt-3">
             <InfoRow icon={Calendar} label={t('assistant.profile.joinedDate')} value={formatDate(user?.created_at)} />
-            <InfoRow icon={Users} label={t('assistant.profile.totalReferrals')} value={String(totalReferrals)} />
+            <InfoRow icon={Users} label={t('assistant.profile.totalReferrals')} value={referralError ? '—' : String(totalReferrals)} />
             <InfoRow icon={AtSign} label={t('auth.username')} value={user?.username} />
-            <InfoRow icon={Phone} label="Phone" value={user?.phone} />
-            <InfoRow icon={Mail} label="Email" value={user?.email} />
+            <InfoRow icon={Phone} label={t('assistant.profile.phone')} value={user?.phone} />
+            <InfoRow icon={Mail} label={t('assistant.profile.email')} value={user?.email} />
           </div>
         </Card>
       </motion.div>
 
-      {/* Badges */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18, duration: 0.35 }}>
-        <Card variant="default" padding="lg">
-          <h2 className="mb-3 text-sm font-semibold text-foreground">{t('assistant.profile.badges')}</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {BADGES.map(({ icon: Icon, label, color, bg }) => (
-              <div key={label} className="flex flex-col items-center gap-1.5 rounded-xl border border-border py-3">
-                <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl', bg)}>
-                  <Icon className={cn('h-5 w-5', color)} />
-                </div>
-                <p className="text-[10px] font-medium text-foreground text-center leading-tight">{label}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </motion.div>
-
-      {/* Achievements */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22, duration: 0.35 }}>
+      {/* Achievements — thresholds are UI configuration, counts are real API data */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18, duration: 0.35 }}
+      >
         <Card variant="default" padding="lg">
           <h2 className="mb-3 text-sm font-semibold text-foreground">{t('assistant.profile.achievements')}</h2>
           <div className="space-y-3">
-            {[
-              { label: 'First Referral', desc: 'Sent your first invite', done: totalReferrals >= 1, pct: Math.min(100, totalReferrals * 100) },
-              { label: '10 Registrations', desc: 'Reached 10 successful sign-ups', done: totalReferrals >= 10, pct: Math.min(100, totalReferrals * 10) },
-              { label: '100 Referrals', desc: 'Reach 100 total referrals', done: totalReferrals >= 100, pct: Math.min(100, totalReferrals) },
-            ].map(({ label, desc, done, pct }) => (
-              <div key={label} className="flex items-center gap-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full', done ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                  {done ? '✓' : <span className="text-xs font-semibold">{pct}%</span>}
+            {achievements.map(({ key, label, desc, done, pct }) => (
+              <div key={key} className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+                    done ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+                  )}
+                >
+                  {done ? '✓' : `${pct}%`}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={cn('text-sm font-medium', done ? 'text-foreground' : 'text-muted-foreground')}>{label}</p>
+                  <p className={cn('text-sm font-medium', done ? 'text-foreground' : 'text-muted-foreground')}>
+                    {label}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
                   {!done && (
                     <div className="mt-1.5 h-1.5 rounded-full bg-muted overflow-hidden">
@@ -190,9 +222,18 @@ export function AssistantProfilePage() {
         </Card>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.26, duration: 0.35 }}>
-        <Button variant="outline" size="md" onClick={handleLogout} leftIcon={<LogOut className="h-4 w-4" />}
-          className="w-full border-destructive/30 text-destructive hover:border-destructive/50 hover:bg-destructive/8">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.22, duration: 0.35 }}
+      >
+        <Button
+          variant="outline"
+          size="md"
+          onClick={handleLogout}
+          leftIcon={<LogOut className="h-4 w-4" />}
+          className="w-full border-destructive/30 text-destructive hover:border-destructive/50 hover:bg-destructive/8"
+        >
           {t('assistant.profile.logout')}
         </Button>
       </motion.div>

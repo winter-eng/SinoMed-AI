@@ -5,7 +5,6 @@ import { useAuth } from '@/app/providers/AuthProvider'
 import { StatCard } from '@/shared/components/ui/StatCard'
 import { ScreeningCTA } from '../components/ScreeningCTA'
 import { RecentAnalyses } from '../components/RecentAnalyses'
-import { HealthScore } from '../components/HealthScore'
 import { useTashkentDate } from '@/shared/hooks/useTashkentDate'
 import { usePredictions } from '@/shared/hooks/usePredictions'
 
@@ -82,10 +81,6 @@ export function DashboardPage() {
           icon={<Calendar className="h-4 w-4" />}
           compact
         />
-      </motion.div>
-
-      <motion.div variants={itemVariants}>
-        <HealthScore />
       </motion.div>
 
       <motion.div variants={itemVariants}>

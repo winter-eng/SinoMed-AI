@@ -1,114 +1,148 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Send } from 'lucide-react'
+import { ArrowLeft, ImagePlus, Loader2, Users, MessageCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
+import { doctorApi } from '@/shared/api/doctor.api'
+import { useAuth } from '@/app/providers/AuthProvider'
 
-const INITIAL_CONVERSATIONS = [
-  {
-    id: 1,
-    name: 'Aziz Karimov',
-    time: '10:42',
-    unread: 2,
-    lastMessage: "Test natijalarim haqida so'ramoqchim...",
-    messages: [
-      { from: 'patient', text: "Salom doktor, kechagi test natijalarini olish mumkinmi?", time: '10:30' },
-      { from: 'doctor', text: "Salom Aziz aka. Ha, natijalar tayyor. DRI ko'rsatkichingiz 82% ko'rsatdi.", time: '10:35' },
-      { from: 'patient', text: 'Bu yaxshimi yoki yomonmi?', time: '10:36' },
-      { from: 'doctor', text: "Xavf darajasi yuqori. Mutaxassis ko'rigiga murojaat qilish tavsiya etiladi.", time: '10:38' },
-      { from: 'patient', text: 'Tushunarlı, qachon borish kerak?', time: '10:40' },
-      { from: 'doctor', text: "Imkon qadar tezroq, 1–2 kun ichida. Klinika ma'lumotlarini yuboraman.", time: '10:42' },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Malika Toshmatova',
-    time: '09:15',
-    unread: 0,
-    lastMessage: "Rahmat doktor, dori kuchli ta'sir qilyapti",
-    messages: [
-      { from: 'doctor', text: 'Malika xonim, tahlil natijalari tayyor. DRI: 65%. Batafsil ko\'rish tavsiya etiladi.', time: '08:50' },
-      { from: 'patient', text: 'Voy, bu nima degani?', time: '09:00' },
-      { from: 'doctor', text: "O'rtacha xavf darajasi. Metformin davomi to'g'ri. Ovqatlanish rejimini saqlang.", time: '09:10' },
-      { from: 'patient', text: "Rahmat doktor, dori kuchli ta'sir qilyapti", time: '09:15' },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Jahon Nazarov',
-    time: 'Kecha',
-    unread: 1,
-    lastMessage: 'Qayta qachon borish kerak?',
-    messages: [
-      { from: 'patient', text: 'Salom doktor. Men kecha klinikaga bordim.', time: '15:30' },
-      { from: 'doctor', text: 'Yaxshi. Natijalar qanday chiqdi?', time: '15:45' },
-      { from: 'patient', text: 'Shifokor 3 oy ichida qayta kelish kerak dedi.', time: '15:47' },
-      { from: 'doctor', text: "To'g'ri. Men siz uchun eslatma qo'yaman. Dori ichishni unutmang.", time: '15:50' },
-      { from: 'patient', text: 'Qayta qachon borish kerak?', time: '15:52' },
-    ],
-  },
-  {
-    id: 4,
-    name: 'Dilnoza Umarova',
-    time: 'Iyn 25',
-    unread: 0,
-    lastMessage: 'Dori-darmonlar haqida savol bor edi',
-    messages: [
-      { from: 'patient', text: 'Salom doktor. Dori-darmonlar haqida savol bor edi.', time: '14:00' },
-      { from: 'doctor', text: 'Marhamat, so\'rang.', time: '14:10' },
-      { from: 'patient', text: 'Metformin bilan birga vitamin ichsa bo\'ladimi?', time: '14:12' },
-      { from: 'doctor', text: 'Ha, D va B12 vitamini tavsiya etiladi. Kuniga 1 marta ovqatdan keyin.', time: '14:15' },
-    ],
-  },
-]
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://aidiagnostikapi.sangilov.uz'
 
 function initials(name) {
+  if (!name) return '?'
   return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
 }
 
-function fmt() {
-  return new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })
+function formatTime(iso) {
+  if (!iso) return ''
+  try {
+    return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  } catch {
+    return ''
+  }
+}
+
+function HistoryItem({ item }) {
+  const { t } = useTranslation()
+  const [imgError, setImgError] = useState(false)
+
+  // Try all known image URL field names; construct from filename as fallback
+  const imageSrc =
+    item.image_url ||
+    item.url ||
+    (item.filename ? `${BASE_URL}/uploads/${item.filename}` : null)
+
+  // Detect sender: if no explicit field, default to doctor (only doctors upload via /dp-chat/upload)
+  const fromDoctor =
+    item.sender === 'doctor' ||
+    item.role === 'doctor' ||
+    item.is_doctor === true ||
+    (item.sender !== 'patient' && item.role !== 'patient' && item.is_patient !== true)
+
+  return (
+    <div className={`flex ${fromDoctor ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${
+          fromDoctor
+            ? 'rounded-br-sm bg-primary text-primary-foreground'
+            : 'rounded-bl-sm bg-muted text-foreground'
+        }`}
+      >
+        {imageSrc && !imgError ? (
+          <img
+            src={imageSrc}
+            alt={item.filename ?? 'image'}
+            className="max-w-full rounded-lg"
+            loading="lazy"
+            onError={() => setImgError(true)}
+          />
+        ) : imageSrc && imgError ? (
+          <p className={`text-sm italic ${fromDoctor ? 'text-primary-foreground/60' : 'opacity-60'}`}>
+            {t('doctor.chat.imageLoadError')}
+          </p>
+        ) : (
+          <p className={`text-sm leading-relaxed ${fromDoctor ? 'text-primary-foreground' : 'text-foreground'}`}>
+            {item.message ?? item.text ?? item.filename ?? JSON.stringify(item)}
+          </p>
+        )}
+        {item.created_at && (
+          <p className={`mt-1 text-[10px] ${fromDoctor ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
+            {formatTime(item.created_at)}
+          </p>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export function DoctorChatPage() {
   const { t } = useTranslation()
-  const [conversations, setConversations] = useState(INITIAL_CONVERSATIONS)
-  const [activeId, setActiveId] = useState(null)
-  const [draft, setDraft] = useState('')
+  const { token } = useAuth()
+
+  const [patients, setPatients] = useState([])
+  const [loadingPatients, setLoadingPatients] = useState(true)
+  const [patientsError, setPatientsError] = useState(null)
+  const [activePatient, setActivePatient] = useState(null)
+  const [history, setHistory] = useState([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [historyError, setHistoryError] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState(null)
+  const fileRef = useRef(null)
   const bottomRef = useRef(null)
 
-  const active = conversations.find((c) => c.id === activeId)
+  useEffect(() => {
+    doctorApi
+      .patients()
+      .then((data) => setPatients(Array.isArray(data) ? data : []))
+      .catch(() => setPatientsError(t('common.error')))
+      .finally(() => setLoadingPatients(false))
+  }, [t])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [activeId, active?.messages?.length])
+  }, [history.length])
 
-  const openConversation = (id) => {
-    setConversations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, unread: 0 } : c)),
-    )
-    setActiveId(id)
-    setDraft('')
+  const loadHistory = useCallback(async (patientId) => {
+    setLoadingHistory(true)
+    setHistory([])
+    setHistoryError(null)
+    try {
+      const data = await doctorApi.chatHistory(patientId)
+      setHistory(Array.isArray(data) ? data : [])
+    } catch {
+      setHistoryError(t('common.error'))
+    } finally {
+      setLoadingHistory(false)
+    }
+  }, [t])
+
+  const openPatient = (patient) => {
+    setActivePatient(patient)
+    loadHistory(patient.id)
   }
 
-  const sendMessage = () => {
-    if (!draft.trim() || !activeId) return
-    const text = draft.trim()
-    const time = fmt()
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === activeId
-          ? { ...c, lastMessage: text, time, messages: [...c.messages, { from: 'doctor', text, time }] }
-          : c,
-      ),
-    )
-    setDraft('')
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !activePatient) return
+    setUploading(true)
+    setUploadError(null)
+    try {
+      await doctorApi.uploadChatImage(token, file)
+      await loadHistory(activePatient.id)
+    } catch (err) {
+      const detail = err?.response?.data?.detail
+      setUploadError(typeof detail === 'string' ? detail : t('doctor.chat.uploadError'))
+    } finally {
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
   }
 
   return (
     <div className="max-w-2xl mx-auto">
       <AnimatePresence mode="wait">
-        {!active ? (
+        {!activePatient ? (
           <motion.div
             key="list"
             initial={{ opacity: 0, x: -16 }}
@@ -119,52 +153,59 @@ export function DoctorChatPage() {
           >
             <div>
               <h1 className="text-xl font-semibold text-foreground">{t('doctor.chat.title')}</h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {conversations.length} {t('doctor.chat.subtitle')}
-              </p>
+              <p className="mt-0.5 text-sm text-muted-foreground">{t('doctor.chat.subtitle')}</p>
             </div>
 
+            {loadingPatients && (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />
+                ))}
+              </div>
+            )}
+
+            {patientsError && (
+              <div className="flex items-center gap-2 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {patientsError}
+              </div>
+            )}
+
+            {!loadingPatients && !patientsError && patients.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center gap-2 py-16 text-center"
+              >
+                <Users className="h-8 w-8 text-muted-foreground/40" />
+                <p className="text-sm font-medium text-foreground">{t('doctor.history.noPatients')}</p>
+                <p className="text-xs text-muted-foreground">{t('doctor.history.noPatientsDesc')}</p>
+              </motion.div>
+            )}
+
             <div className="space-y-2">
-              {conversations.map((c, i) => (
+              {patients.map((p, i) => (
                 <motion.div
-                  key={c.id}
+                  key={p.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.04 * i, duration: 0.3 }}
                 >
                   <button
-                    onClick={() => openConversation(c.id)}
+                    onClick={() => openPatient(p)}
                     className="w-full rounded-xl border border-border bg-card p-3.5 text-left transition-colors hover:bg-accent/50 active:scale-[0.99]"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="relative shrink-0">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
-                          {initials(c.name)}
-                        </div>
-                        {c.unread > 0 && (
-                          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
-                            {c.unread}
-                          </span>
-                        )}
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
+                        {initials(p.full_name)}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between">
-                          <p
-                            className={cn(
-                              'text-sm font-semibold text-foreground',
-                              c.unread > 0 && 'text-primary',
-                            )}
-                          >
-                            {c.name}
-                          </p>
-                          <span className="ml-2 shrink-0 text-[11px] text-muted-foreground">
-                            {c.time}
-                          </span>
-                        </div>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                          {c.lastMessage}
-                        </p>
+                        <p className="text-sm font-semibold text-foreground">{p.full_name || '—'}</p>
+                        {p.phone && (
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">{p.phone}</p>
+                        )}
                       </div>
+                      <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                     </div>
                   </button>
                 </motion.div>
@@ -173,7 +214,7 @@ export function DoctorChatPage() {
           </motion.div>
         ) : (
           <motion.div
-            key={`chat-${active.id}`}
+            key={`chat-${activePatient.id}`}
             initial={{ opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 16 }}
@@ -183,73 +224,91 @@ export function DoctorChatPage() {
             {/* Header */}
             <div className="flex items-center gap-3 border-b border-border pb-3">
               <button
-                onClick={() => setActiveId(null)}
+                onClick={() => setActivePatient(null)}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-accent"
                 aria-label={t('doctor.chat.backToList')}
               >
                 <ArrowLeft className="h-4 w-4 text-muted-foreground" />
               </button>
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
-                {initials(active.name)}
+                {initials(activePatient.full_name)}
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">{active.name}</p>
-                <p className="text-xs text-green-500">Online</p>
+                <p className="text-sm font-semibold text-foreground">{activePatient.full_name || '—'}</p>
+                {activePatient.phone && (
+                  <p className="text-xs text-muted-foreground">{activePatient.phone}</p>
+                )}
               </div>
             </div>
 
             {/* Messages */}
             <div className="max-h-[55vh] min-h-[30vh] overflow-y-auto space-y-3 pb-2 pr-1">
-              {active.messages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03, duration: 0.2 }}
-                  className={cn('flex', msg.from === 'doctor' ? 'justify-end' : 'justify-start')}
-                >
-                  <div
-                    className={cn(
-                      'max-w-[80%] rounded-2xl px-3.5 py-2.5',
-                      msg.from === 'doctor'
-                        ? 'rounded-br-sm bg-primary text-primary-foreground'
-                        : 'rounded-bl-sm bg-muted text-foreground',
-                    )}
+              {loadingHistory && (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              )}
+
+              {historyError && (
+                <div className="flex items-center gap-2 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {historyError}
+                </div>
+              )}
+
+              {!loadingHistory && !historyError && history.length === 0 && (
+                <div className="flex flex-col items-center gap-2 py-12 text-center">
+                  <MessageCircle className="h-8 w-8 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">{t('doctor.chat.noMessages')}</p>
+                </div>
+              )}
+
+              {!loadingHistory &&
+                history.map((item, i) => (
+                  <motion.div
+                    key={item.id ?? i}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03, duration: 0.2 }}
                   >
-                    <p className="text-sm leading-relaxed">{msg.text}</p>
-                    <p
-                      className={cn(
-                        'mt-1 text-[10px]',
-                        msg.from === 'doctor'
-                          ? 'text-right text-primary-foreground/70'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {msg.time}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+                    <HistoryItem item={item} />
+                  </motion.div>
+                ))}
+
               <div ref={bottomRef} />
             </div>
 
-            {/* Input */}
+            {/* Upload error */}
+            {uploadError && (
+              <div className="flex items-center gap-2 rounded-xl bg-destructive/8 px-3 py-2 text-xs text-destructive">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                {uploadError}
+              </div>
+            )}
+
+            {/* Upload image action */}
             <div className="flex items-center gap-2 border-t border-border pt-3">
               <input
-                type="text"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                placeholder={t('doctor.chat.inputPlaceholder')}
-                className="h-10 flex-1 rounded-xl border border-input bg-card px-3.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
               />
               <button
-                onClick={sendMessage}
-                disabled={!draft.trim()}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 active:scale-95 disabled:opacity-40"
-                aria-label={t('doctor.chat.send')}
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className={cn(
+                  'flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50',
+                  uploading && 'cursor-not-allowed',
+                )}
               >
-                <Send className="h-4 w-4" />
+                {uploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                ) : (
+                  <ImagePlus className="h-4 w-4 text-primary" />
+                )}
+                {uploading ? t('doctor.chat.uploading') : t('doctor.chat.uploadImage')}
               </button>
             </div>
           </motion.div>

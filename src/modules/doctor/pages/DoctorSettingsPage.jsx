@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Shield, Key, Eye, LogOut, Sun, Moon } from 'lucide-react'
+import { Bell, Shield, Eye, LogOut, Sun, Moon } from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { useAuth } from '@/app/providers/AuthProvider'
@@ -50,6 +50,11 @@ function SettingRow({ icon: Icon, title, description, children }) {
   )
 }
 
+function loadSetting(key, def) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? def } catch { return def }
+}
+function saveSetting(key, val) { localStorage.setItem(key, JSON.stringify(val)) }
+
 export function DoctorSettingsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -57,11 +62,17 @@ export function DoctorSettingsPage() {
   const { theme, setTheme } = useTheme()
   const { language, setLanguage } = useLanguage()
 
-  const [notifResults, setNotifResults] = useState(true)
-  const [notifMessages, setNotifMessages] = useState(true)
-  const [notifReminders, setNotifReminders] = useState(false)
-  const [twoFactor, setTwoFactor] = useState(false)
-  const [dataUsage, setDataUsage] = useState(true)
+  const [notifResults, setNotifResultsRaw] = useState(() => loadSetting('dr.notifResults', true))
+  const [notifMessages, setNotifMessagesRaw] = useState(() => loadSetting('dr.notifMessages', true))
+  const [notifReminders, setNotifRemindersRaw] = useState(() => loadSetting('dr.notifReminders', false))
+  const [twoFactor, setTwoFactorRaw] = useState(() => loadSetting('dr.twoFactor', false))
+  const [dataUsage, setDataUsageRaw] = useState(() => loadSetting('dr.dataUsage', true))
+
+  const setNotifResults = (v) => { setNotifResultsRaw(v); saveSetting('dr.notifResults', v) }
+  const setNotifMessages = (v) => { setNotifMessagesRaw(v); saveSetting('dr.notifMessages', v) }
+  const setNotifReminders = (v) => { setNotifRemindersRaw(v); saveSetting('dr.notifReminders', v) }
+  const setTwoFactor = (v) => { setTwoFactorRaw(v); saveSetting('dr.twoFactor', v) }
+  const setDataUsage = (v) => { setDataUsageRaw(v); saveSetting('dr.dataUsage', v) }
 
   const handleLogout = () => {
     logout()
@@ -173,11 +184,6 @@ export function DoctorSettingsPage() {
             {t('doctor.settings.security')}
           </h2>
           <div className="mt-3">
-            <SettingRow icon={Key} title={t('doctor.settings.changePassword')}>
-              <button className="text-xs font-medium text-primary hover:underline">
-                {t('common.edit')}
-              </button>
-            </SettingRow>
             <SettingRow
               icon={Shield}
               title={t('doctor.settings.twoFactor')}

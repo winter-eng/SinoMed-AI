@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -9,15 +9,11 @@ import { Logo } from '@/shared/components/ui/Logo'
 import { ROUTES } from '@/shared/constants/routes'
 import { LoginForm } from '../components/LoginForm'
 import { useAuth } from '@/app/providers/AuthProvider'
-// DEV-only — remove this import and the <DevPreviewModal> usage before production
-import { DevPreviewModal } from '../components/DevPreviewModal'
 
 export function LoginPage() {
   const { t } = useTranslation()
   const { isAuthenticated, isLoading, role } = useAuth()
   const [mode, setMode] = useState('login')
-  const [showDevModal, setShowDevModal] = useState(false)
-  const tapTimesRef = useRef([])
 
   if (!isLoading && isAuthenticated) {
     if (role === 'doctor') return <Navigate to={ROUTES.DOCTOR.CASES} replace />
@@ -26,17 +22,6 @@ export function LoginPage() {
   }
 
   const isRegister = mode === 'register'
-
-  // Hidden dev trigger: 5 taps within 2 seconds reveals the developer preview modal
-  const handleHiddenTap = () => {
-    if (!import.meta.env.DEV) return
-    const now = Date.now()
-    tapTimesRef.current = [...tapTimesRef.current, now].filter((t) => now - t < 2000)
-    if (tapTimesRef.current.length >= 5) {
-      tapTimesRef.current = []
-      setShowDevModal(true)
-    }
-  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -110,21 +95,8 @@ export function LoginPage() {
             </button>
           </p>
 
-          {import.meta.env.DEV && (
-            <button
-              onClick={() => setShowDevModal(true)}
-              className="mt-5 w-full rounded-xl border border-dashed border-border bg-muted/30 py-2 text-xs font-mono text-muted-foreground hover:bg-muted transition-colors"
-            >
-              DEV PREVIEW
-            </button>
-          )}
         </motion.div>
       </main>
-
-      {/* DEV only — remove before production */}
-      {import.meta.env.DEV && (
-        <DevPreviewModal isOpen={showDevModal} onClose={() => setShowDevModal(false)} />
-      )}
     </div>
   )
 }

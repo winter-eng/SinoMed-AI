@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, LogOut, Phone, Mail, BadgeCheck, Stethoscope, AtSign, Hash, Calendar } from 'lucide-react'
+import { LogOut, Phone, Mail, BadgeCheck, Stethoscope, AtSign, Hash, Calendar } from 'lucide-react'
 import { Card } from '@/shared/components/ui/Card'
 import { Button } from '@/shared/components/ui/Button'
 import { Logo } from '@/shared/components/ui/Logo'
@@ -81,12 +81,6 @@ export function DoctorProfilePage() {
                 {t('doctor.role')}
               </span>
             </div>
-            <button
-              aria-label={t('doctor.profile.editProfile')}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            >
-              <Edit2 className="h-3.5 w-3.5" />
-            </button>
           </div>
         </Card>
       </motion.div>
@@ -98,7 +92,7 @@ export function DoctorProfilePage() {
         transition={{ delay: 0.12, duration: 0.35 }}
       >
         <Card variant="default" padding="lg">
-          <h2 className="mb-1 text-sm font-semibold text-foreground">Professional</h2>
+          <h2 className="mb-1 text-sm font-semibold text-foreground">{t('doctor.profile.sectionProfessional')}</h2>
           <div className="mt-3">
             <InfoRow icon={Stethoscope} label={t('doctor.profile.specialization')} value={specialization} />
             <InfoRow icon={Hash} label={t('doctor.profile.clinicId')} value={user?.clinic_id} />
@@ -115,7 +109,7 @@ export function DoctorProfilePage() {
         transition={{ delay: 0.18, duration: 0.35 }}
       >
         <Card variant="default" padding="lg">
-          <h2 className="mb-1 text-sm font-semibold text-foreground">Contact</h2>
+          <h2 className="mb-1 text-sm font-semibold text-foreground">{t('doctor.profile.sectionContact')}</h2>
           <div className="mt-3">
             <InfoRow icon={Phone} label={t('doctor.profile.phone')} value={user?.phone} />
             <InfoRow icon={Mail} label={t('doctor.profile.email')} value={user?.email} />

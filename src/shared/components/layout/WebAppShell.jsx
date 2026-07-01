@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { DesktopTopbar } from './DesktopTopbar'
 import { MobileTopbar } from './MobileTopbar'
 import { MobileBottomNav } from './MobileBottomNav'
+import { PatientChatFAB } from '@/shared/components/ui/PatientChatFAB'
 
 export function WebAppShell() {
   const location = useLocation()
@@ -29,6 +30,7 @@ export function WebAppShell() {
       </main>
 
       <MobileBottomNav />
+      <PatientChatFAB />
     </div>
   )
 }

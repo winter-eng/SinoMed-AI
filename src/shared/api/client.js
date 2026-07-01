@@ -22,53 +22,34 @@ apiClient.interceptors.response.use(
     const cfg = error?.config ?? {}
     const res = error?.response
 
-    // ── Detailed API error logging (always on — helps diagnose backend issues) ──
-    const method = cfg.method?.toUpperCase() ?? '?'
-    const url = `${cfg.baseURL ?? ''}${cfg.url ?? '?'}`
-
-    console.group(`%c[API ERROR] ${method} ${url}`, 'color:#e11d48;font-weight:bold')
-
-    // Request body
-    if (cfg.data != null) {
-      if (cfg.data instanceof FormData) {
-        console.log('Request Body: [FormData — binary/multipart]')
-      } else {
-        try {
-          console.log('Request Body:', JSON.parse(cfg.data))
-        } catch {
-          console.log('Request Body (raw):', cfg.data)
+    // Development-only API error logging
+    if (import.meta.env.DEV) {
+      const method = cfg.method?.toUpperCase() ?? '?'
+      const url = `${cfg.baseURL ?? ''}${cfg.url ?? '?'}`
+      console.group(`%c[API ERROR] ${method} ${url}`, 'color:#e11d48;font-weight:bold')
+      if (cfg.data != null) {
+        if (cfg.data instanceof FormData) {
+          console.log('Request Body: [FormData]')
+        } else {
+          try { console.log('Request Body:', JSON.parse(cfg.data)) }
+          catch { console.log('Request Body (raw):', cfg.data) }
         }
       }
+      if (res) {
+        console.log('Status:', res.status, '— Body:', res.data)
+      } else {
+        console.log('No response:', error.message)
+      }
+      console.groupEnd()
     }
-
-    // Request headers (token redacted)
-    const authHeader = cfg.headers?.Authorization
-    if (authHeader) {
-      console.log('Authorization:', authHeader.replace(/Bearer .+/, 'Bearer [REDACTED]'))
-    }
-
-    // Response
-    if (res) {
-      console.log('Response Status:', res.status)
-      console.log('Response Body:', res.data)
-    } else {
-      console.log('No response received (network error / CORS / timeout)')
-      console.log('Error message:', error.message)
-    }
-
-    console.groupEnd()
-    // ─────────────────────────────────────────────────────────────────────────
 
     // Auto-logout on 401, except for:
     //  • auth endpoints (wrong credentials — don't log the user out)
     //  • requests that opted out via _skipLogout (bootstrap token validation)
-    //  • DEV preview tokens (dev-token* never exist on the real backend)
     const isAuthEndpoint = cfg.url?.includes('/auth/')
     const skipLogout = cfg._skipLogout
-    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
-    const isDevToken = import.meta.env.DEV && token?.startsWith('dev-token')
 
-    if (res?.status === 401 && !isAuthEndpoint && !skipLogout && !isDevToken) {
+    if (res?.status === 401 && !isAuthEndpoint && !skipLogout) {
       window.dispatchEvent(new Event('auth:logout'))
     }
 

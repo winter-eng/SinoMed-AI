@@ -10,6 +10,8 @@ export const ROUTES = {
   ANALYSIS: {
     RESULT: (id) => `/analysis/${id}`,
   },
+  CHAT: '/chat',
+  PATIENT_DOCTOR_CHAT: '/doctor-chat',
   SUPPORT: '/support',
   CLINICS: '/clinics',
   SETTINGS: '/settings',
