@@ -4,8 +4,9 @@
 
 **AI-Powered Digital Healthcare Ecosystem**
 
-<img src="/public/sinomed-logo.png" alt="" width="20" height="20">
-*Connecting patients, doctors, AI, and clinics into one intelligent diagnostic platform*
+<img src="/public/sinomed-logo.png" alt="" width="100" height="100">
+
+**Connecting patients, doctors, AI, and clinics into one intelligent diagnostic platform**
 
 ---
 
